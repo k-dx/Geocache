@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="styles/output.css" rel="stylesheet">
+    <title>Create or edit route</title>
+</head>
+<body>
+    <pre><%= locals.id %></pre>
+    <form action="/admin/routes/edit" method="post">
+        <label for="name">Name of the route</label>
+        <input type="text" name="name">
+        <input type="submit" value="Save">
+    </form>
+</body>
+</html>
