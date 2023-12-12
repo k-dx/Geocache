@@ -3,15 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="styles/output.css" rel="stylesheet">
+    <!-- <link rel="stylesheet" type="text/css" href="/styles/output.css" > -->
     <title>Create or edit route</title>
+    <style>
+        .red {
+            color: red;
+        }
+    </style>
 </head>
 <body>
     <pre><%= locals.id %></pre>
     <form action="/admin/routes/edit" method="post">
-        <label for="name">Name of the route</label>
-        <input type="text" name="name">
-        <input type="submit" value="Save">
+        <label for="name">Route name</label>
+        <input class="border border-black" type="text" name="name">
+        <div class="waypoints">
+            <div class="waypoint-entry" data-id="0">
+                <p>Waypoint 0</p>
+                <label for="w0_lat">Latitude</label>
+                <input class="border border-black" type="text" name="w0_lat">
+                <label for="w0_lon">Latitude</label>
+                <input class="border border-black" type="text" name="w0_lon">
+                <label for="w0_lon">Name</label>
+                <input class="border border-black" type="text" name="w0_name">
+            </div>
+        </div>
+        
+        <input class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800" type="submit" value="Save">
     </form>
+    <button class="add-waypoint">Add waypoint</button>
+    <button class="remove-waypoint">Remove waypoint</button>
+    <script>
+        function removeLastWaypoint () {
+            const w = document.querySelectorAll('.waypoint-entry');
+            w[w.length - 1].remove();
+        }
+
+        function getNextId () {
+            const waypoints = document.querySelectorAll('[data-id]');
+            const currentId = Number(waypoints[waypoints.length - 1].dataset.id);
+            return currentId + 1;
+        }
+
+        function addWaypoint () {
+            const id = getNextId();
+            console.log(id);
+            const waypointContainer = document.createElement('div');
+            waypointContainer.classList.add('waypoint-entry');
+            waypointContainer.dataset.id = id;
+            const waypointInner = 
+           `<p>Waypoint ${id}</p>
+            <label for="w${id}_lat">Latitude</label>
+            <input class="border border-black" type="text" name="w${id}_lat">
+            <label for="w${id}_lon">Latitude</label>
+            <input class="border border-black" type="text" name="w${id}_lon">
+            <label for="w${id}_lon">Name</label>
+            <input class="border border-black" type="text" name="w${id}_name">`;
+            waypointContainer.innerHTML = waypointInner;
+
+            const waypointsContainer = document.querySelector('.waypoints');
+            waypointsContainer.append(waypointContainer);
+        }
+        (function () { 
+            const addButton = document.querySelector('.add-waypoint');
+            addButton.addEventListener('click', addWaypoint);
+            const removeButton = document.querySelector('.remove-waypoint');
+            removeButton.addEventListener('click', removeLastWaypoint);
+        })();
+    </script>
 </body>
 </html>
