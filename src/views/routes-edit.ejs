@@ -12,8 +12,14 @@
     </style>
 </head>
 <body>
-    <pre><%= locals.id %></pre>
-    <form action="/admin/routes/edit" method="post">
+    <pre>route_id = <%= locals.route.id %></pre>
+    <pre>owner_id = <%= locals.route.owner_id %></pre>
+    <pre>mode = <%= locals.mode %></pre>
+    <form action="/admin/routes/<%= locals.mode %>" method="post">
+        <input type="hidden" name="owner_id" value="<%= locals.route.owner_id %>">
+        <% if (locals.mode === 'edit') { %>
+            <input type="hidden" name="route_id" value="<%= locals.route.id %>">
+        <% } %>
         <label for="name">Route name</label>
         <input class="border border-black" type="text" name="name">
         <div class="waypoints">
@@ -63,11 +69,17 @@
             const waypointsContainer = document.querySelector('.waypoints');
             waypointsContainer.append(waypointContainer);
         }
+        function prefillForm () {
+            const nameInput = document.querySelector('input[name="name"]');
+            nameInput.value = '<%= locals.route.name %>';
+        }
         (function () { 
             const addButton = document.querySelector('.add-waypoint');
             addButton.addEventListener('click', addWaypoint);
             const removeButton = document.querySelector('.remove-waypoint');
             removeButton.addEventListener('click', removeLastWaypoint);
+            
+            prefillForm();
         })();
     </script>
 </body>
