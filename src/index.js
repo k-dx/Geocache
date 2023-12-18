@@ -32,6 +32,14 @@ async function createRoute (name, owner_id) {
     console.log(res);
 }
 
+async function updateRoute (id, name, owner_id) {
+    const res = await pool.query(
+        'UPDATE Routes SET name = ? WHERE id = ? AND owner_id = ?',
+        [ name, id, owner_id ]
+    );
+    console.log(res);
+}
+
 async function getRoute (id) {
     const [rows] = await pool.query(
         'SELECT * FROM Routes WHERE id = ?',
@@ -67,9 +75,13 @@ app.get('/admin/routes/edit/:route_id', async (req, res) => {
         mode: EDIT_ROUTE, 
         route: route });
 })
-app.post('/admin/routes/edit/:id', (req, res) => {
-    const id = req.params.id;
+app.post('/admin/routes/edit', async (req, res) => {
+    const id = req.body.route_id;
+    const name = req.body.name;
+    const owner_id = req.body.owner_id;
+    console.log(id, name, owner_id);
     // TODO update the changes to the database
+    await updateRoute(id, name, owner_id);
     res.redirect('/admin/routes/list');
 })
 
