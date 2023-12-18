@@ -41,18 +41,19 @@
     <script>
         function removeLastWaypoint () {
             const w = document.querySelectorAll('.waypoint-entry');
+            if (w.length === 1) return;
             w[w.length - 1].remove();
         }
 
         function getNextId () {
             const waypoints = document.querySelectorAll('[data-id]');
+            if (waypoints.length === 0) return 0;
             const currentId = Number(waypoints[waypoints.length - 1].dataset.id);
             return currentId + 1;
         }
 
         function addWaypoint () {
             const id = getNextId();
-            console.log(id);
             const waypointContainer = document.createElement('div');
             waypointContainer.classList.add('waypoint-entry');
             waypointContainer.dataset.id = id;
