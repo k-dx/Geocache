@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+</head>
+<body>
+    <div>
+        <% if (locals.message) { %>
+         <p><%= locals.message %></p>
+        <% } %>
+        <form action="/login" method="post">
+            <label for="email">Email</label>
+            <input type="text" name="email" id="email" value="<%= typeof locals.email !== 'undefined' ? locals.email : '' %>">
+            <label for="password">Password</label>
+            <input type="password" name="password" id="password">
+            <input type="submit" value="Login">
+        </form>
+    </div>
+</body>
+</html>
