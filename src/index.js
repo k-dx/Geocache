@@ -4,10 +4,31 @@ import mysql from 'mysql2';
 import dotenv from 'dotenv';
 import bcrypt from 'bcrypt';
 import cookieParser from 'cookie-parser';
+import { AuthorizationCode } from 'simple-oauth2';
+import jwt from 'jsonwebtoken';
+import jwksClient from 'jwks-rsa';
 dotenv.config();
 
 const EDIT_ROUTE = 'edit';
 const CREATE_ROUTE = 'create';
+
+const oauth2 = new AuthorizationCode({
+    client: {
+        id: process.env.GOOGLE_CLIENT_ID,
+        secret: process.env.GOOGLE_CLIENT_SECRET,
+    },
+    auth: {
+        tokenHost: 'https://www.googleapis.com',
+        tokenPath: '/oauth2/v4/token',
+        authorizeHost: 'https://accounts.google.com',
+        authorizePath: '/o/oauth2/v2/auth'
+    },
+});
+
+const authorizationUri = oauth2.authorizeURL({
+    redirect_uri: process.env.GOOGLE_REDIRECT_URI,
+    scope: 'openid profile email'
+});
 
 var app = express();
 
@@ -98,17 +119,39 @@ async function hashPassword (password) {
 }
 
 /**
- * Creates an account with the given credentials in the database
- * Does not verify if the credentials are valid
+ * Creates an account with the given credentials in the database. Does not
+ * verify if the credentials are valid. Either password or googleId must 
+ * be provided.
  * @param {string} email 
  * @param {string} username 
  * @param {string} password (not hashed)
+ * @param {string} googleId
  */
-async function createUser(email, username, password) {
-    const hash = await hashPassword(password);
+async function createUser({email, username, password=null, googleId=null}) {
+    if (password !== null) {
+        const hash = await hashPassword(password);
+        const res = await pool.query(
+            'INSERT INTO Users (email, username, password) VALUES (?, ?, ?)',
+            [ email, username, hash ]
+        );
+        return res;
+    }
+    else if (googleId !== null) {
+        const res = await pool.query(
+            'INSERT INTO Users (email, username, googleId) VALUES (?, ?, ?)',
+            [ email, username, googleId ]
+        );
+        return res;
+    }
+    else {
+        throw new Error('Either password or googleId must be provided');
+    }
+}
+
+async function linkAccountWithGoogle({userId, googleId}) {
     const res = await pool.query(
-        'INSERT INTO Users (email, username, password) VALUES (?, ?, ?)',
-        [ email, username, hash ]
+        'UPDATE Users SET googleId = ? WHERE id = ?',
+        [ googleId, userId ]
     );
 }
 
@@ -119,10 +162,112 @@ app.get('/login', (req, res) => {
     if (redirectUrl) {
         message = 'You must be logged in to view this page';
     }
-    res.render('login', { message: message });
+    res.render('login', { message: message, google: authorizationUri });
 });
+app.post('/login', async (req, res) => {
+    const email = req.body.email;
+    const password = req.body.password;
+
+    const emailExistsRes = await emailExists(email);
+    if (!emailExistsRes) {
+        res.render('login',
+                   { email: email, 
+                     message: 'email is not associated with any account',
+                     google: authorizationUri });
+        return;
+    }
+    const passwordRes = await passwordCorrect(email, password);
+    if (!passwordRes) {
+        res.render('login', 
+                   { email: email,
+                     message: 'password is incorrect',
+                     google: authorizationUri });
+        return;
+    }
+
+    const redirectUrl = req.query.returnUrl || '/login/success';
+    res.cookie('user', email, { signed: true });
+    res.redirect(redirectUrl);
+})
+
 app.get('/register', (req, res) => {
     res.render('register');
+});
+
+/**
+ * Slightly modified code from the lecture
+ */
+app.get('/oauth/google', async (req, res) => {
+    const code = req.query.code;
+    const options = {
+        code,
+        redirect_uri: process.env.GOOGLE_REDIRECT_URI
+    };
+
+    // żądanie do punktu końcowego oauth2 zamieniające code na access_token i id_token
+    var result       = await oauth2.getToken(options)
+    console.log(result);
+
+    // teraz są dwie możliwości
+    // 1. użyć access_token żeby zapytać serwera kto kryje się pod wskazaną tożsamością
+    // 2. użyć id_token gdzie od razu zapisana jest wskazana tożsamość
+    var access_token = result.token.access_token;
+    var id_token     = result.token.id_token;
+
+    // wariant 1. - żądanie do usługi profile API Google+ po profil użytkownika
+    /*
+    var response = 
+        await fetch('https://openidconnect.googleapis.com/v1/userinfo', 
+                    { headers:  {
+                      "Authorization": `Bearer ${encodeURIComponent(access_token)}`
+                    }});
+    var profile = await response.json();                        
+    if (profile.email) {
+        // zalogowanie 
+        res.cookie('user', profile.email, { signed: true });
+        res.redirect('/');
+    }
+    */ 
+
+    // wariant 2. - tożsamość bez potrzeby dodatkowego żądania
+    // Uwaga! Formalnie token JWT należy zweryfikować, posługując się kluczami publicznymi
+    // z https://www.googleapis.com/oauth2/v3/certs
+    var client = jwksClient({
+        jwksUri: 'https://www.googleapis.com/oauth2/v3/certs'
+    });
+    function getKey(header, callback){
+        client.getSigningKey(header.kid, function(err, key) {
+            var signingKey = key.publicKey || key.rsaPublicKey;
+            callback(null, signingKey);
+        });
+    } 
+    var profile = jwt.verify(id_token, getKey, async (err, profile) => {
+        console.log(profile);
+        if (!profile.email) {
+            // TODO nicer error page
+            res.status(500).send('No email in Google account');
+        }
+
+        let user = await getUser(profile.email);
+        if (!user) {
+            // utworzenie konta
+            user = await createUser({
+                email: profile.email,
+                username: profile.name,
+                googleId: profile.sub
+            });
+        }
+        if (user.googleId === null) {
+            await linkAccountWithGoogle({
+                userId: user.id,
+                googleId: profile.sub
+            });
+        }
+
+        // zalogowanie
+        res.cookie('user', profile.email, { signed: true });
+        res.redirect('/login/success');    
+    });
 });
 
 /**
@@ -204,7 +349,11 @@ app.post('/register', async (req, res) => {
         return;
     }
 
-    await createUser(email, username, password);
+    await createUser({
+        email: email,
+        username: username,
+        password: password
+    });
     res.redirect('/register/success');
 })
 
@@ -241,26 +390,6 @@ function authorize(req, res, next) {
     }
 }
 
-app.post('/login', async (req, res) => {
-    const email = req.body.email;
-    const password = req.body.password;
-
-    const emailExistsRes = await emailExists(email);
-    if (!emailExistsRes) {
-        res.render('login', { email: email, message: 'email is not associated with any account' });
-        return;
-    }
-    const passwordRes = await passwordCorrect(email, password);
-    if (!passwordRes) {
-        res.render('login', { email: email, message: 'password is incorrect' });
-        return;
-    }
-
-    const redirectUrl = req.query.returnUrl || '/login/success';
-    res.cookie('user', email, { signed: true });
-    res.redirect(redirectUrl);
-})
-
 app.get('/register/success', (req, res) => {
     res.render('register-success');
 })
@@ -278,6 +407,13 @@ async function getUsername(email) {
         [ email ]
     );
     return rows[0].username;
+}
+async function getUser(email) {
+    const [rows] = await pool.query(
+        'SELECT * FROM Users WHERE email = ?',
+        [ email ]
+    );
+    return rows[0];
 }
 app.get('/account', authorize, async (req, res) => {
     const username = await getUsername(req.user);
