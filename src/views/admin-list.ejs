@@ -9,5 +9,24 @@
 <body>
     <a class="text-blue-700" href="/admin/routes/create">Create a new route</a>
     <h1>Your routes</h1>
+    <table class="border-collapse border-2">
+        <thead>
+            <tr>
+                <th class="border border-black">ID</th>
+                <th class="border border-black">Name</th>
+                <th class="border border-black">Owner ID</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% locals.routes.forEach(route => { %>
+                <tr>
+                    <td class="border border-black"><%= route.id %></td>
+                    <td class="border border-black"><%= route.name %></td>
+                    <td class="border border-black"><%= route.owner_id %></td>
+                </tr>
+            <% }) %>
+            <!-- Add more rows as needed -->
+        </tbody>
+    </table>
 </body>
 </html>

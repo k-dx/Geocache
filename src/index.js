@@ -49,12 +49,17 @@ async function getRoute (id) {
     return rows[0];
 }
 
+async function getRoutes () {
+    const [rows] = await pool.query('SELECT * FROM Routes');
+    return rows;
+}
+
 app.get('/', (req, res) => {
     res.render('index');
 })
-app.get('/admin/routes/list', (req, res) => {
+app.get('/admin/routes/list', async (req, res) => {
     // TODO list all routes
-    res.render('admin-list');
+    res.render('admin-list', { routes: await getRoutes() });
 })
 app.get('/admin/routes/create', (req, res) => {
     const route = { owner_id: 1 }; // TODO: not-hardcoded owner_id
