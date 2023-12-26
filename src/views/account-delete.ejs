@@ -4,11 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="/styles/output.css" >
-    <title>Account info</title>
+    <title>Account delete</title>
 </head>
 <body>
     <div>Email: <%= locals.email %></div>
     <div>Username: <%= locals.username %></div>
-    <a href="/account/delete" class="text-red-900">Delete account</a>
+    <form action="/account/delete" method="post">
+        Are you sure you want to delete your account? This action is irreversible!
+        <input type="submit" value="Delete my account" class="bg-red-300">
+    </form>
 </body>
 </html>

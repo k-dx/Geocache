@@ -155,6 +155,14 @@ async function linkAccountWithGoogle({userId, googleId}) {
     );
 }
 
+async function deleteUser(email) {
+    const res = await pool.query(
+        'DELETE FROM Users WHERE email = ?',
+        [ email ]
+    );
+    return res;
+}
+
 // login
 app.get('/login', (req, res) => {
     const redirectUrl = req.query.returnUrl;
@@ -418,6 +426,14 @@ async function getUser(email) {
 app.get('/account', authorize, async (req, res) => {
     const username = await getUsername(req.user);
     res.render('account-info', { email: req.user, username: username });
+})
+app.get('/account/delete', authorize, async (req, res) => {
+    const username = await getUsername(req.user);
+    res.render('account-delete', { email: req.user, username: username });
+})
+app.post('/account/delete', authorize, async (req, res) => {
+    await deleteUser(req.user);
+    res.redirect('/logout');
 })
 
 createServer(app).listen(3000);
