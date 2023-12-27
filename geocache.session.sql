@@ -22,6 +22,8 @@ CREATE TABLE Waypoints(
     latitude DECIMAL(9,6) NOT NULL,
     longitude DECIMAL(9,6) NOT NULL,
     route_id INT,
+    order_id INT NOT NULL,
+    name VARCHAR(255) NOT NULL
     FOREIGN KEY (route_id) REFERENCES Routes(id)
 )
 
@@ -38,6 +40,9 @@ SELECT * FROM Users;
 SELECT * FROM Routes;
 
 -- @block
+SELECT * FROM Waypoints;
+
+-- @block
 UPDATE Routes SET name = 'placeholder' WHERE id = 1 AND owner_id = 1
 
 -- @block
@@ -51,8 +56,8 @@ SELECT * FROM Users WHERE username = 'john123'
 DELETE FROM Users WHERE id BETWEEN 1 AND 4
 
 -- @block
-ALTER TABLE Users
-ADD googleId VARCHAR(255) UNIQUE;
+ALTER TABLE Waypoints
+ADD COLUMN name VARCHAR(255) NOT NULL;
 
 -- @block
 ALTER TABLE Users
@@ -61,3 +66,6 @@ ADD CONSTRAINT chk_password_or_googleId CHECK (password IS NOT NULL OR googleId 
 -- @block
 ALTER TABLE Users
 MODIFY password VARCHAR(255) NULL;
+
+-- @block
+DELETE FROM Waypoints WHERE route_id = 2
