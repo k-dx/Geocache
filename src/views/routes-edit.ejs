@@ -95,6 +95,9 @@
             const w = document.querySelectorAll('.waypoint-entry');
             if (w.length === 1) return;
             w[w.length - 1].remove();
+            // remove marker from map
+            markers[markers.length - 1].setMap(null);
+            markers.pop();
         }
 
         function getNextId () {
