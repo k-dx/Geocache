@@ -15,24 +15,45 @@
     <!-- <pre>route_id = <%= locals.route.id %></pre>
     <pre>owner_id = <%= locals.route.owner_id %></pre>
     <pre>mode = <%= locals.mode %></pre> -->
-    <div class="h-screen grid grid-cols-2 gap-4">
+    <div class="h-screen grid grid-cols-2 dark:bg-gray-900">
         <div id="map">MAP WILL BE HERE</div>
-        <div class="py-2">
+        <div class="p-4">
             <form action="/admin/routes/<%= locals.mode %>" method="post">
                 <input type="hidden" name="owner_id" value="<%= locals.route.owner_id %>">
                 <% if (locals.mode === 'edit') { %>
                     <input type="hidden" name="route_id" value="<%= locals.route.id %>">
                 <% } %>
-                <label for="name">Route name</label>
-                <input class="border border-black" type="text" name="name">
-                <div class="waypoints">
+
+                <label for="name" class="block mb-2 font-medium text-gray-900 dark:text-white ">Route name</label>
+                <input type="text" id="name" name="name" placeholder="My great route" required class="mb-4 bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                <div class="waypoints mb-4">
                     <%# Filled by client-side javascript %>
                 </div>
                 
-                <input class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800 hover:cursor-pointer" type="submit" value="Save">
-                <button type="button" class="add-waypoint text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Add waypoint</button>
-                <button type="button" class="remove-waypoint text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Remove waypoint</button>
+                <input class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800 hover:cursor-pointer" type="submit" value="Save route">
+                <button type="button" class="add-waypoint text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Add waypoint</button>
+                <button type="button" class="remove-waypoint text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Remove waypoint</button>
             </form>
+        </div>
+
+               
+        <div id="toast-edit-info" class="hidden fixed top-10 left-1/2 transform -translate-x-1/2 flex items-center w-full max-w-sm p-4 text-gray-500 bg-white rounded-lg drop-shadow-lg shadow-lg dark:text-gray-400 dark:bg-gray-800" role="alert">
+            <div class="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-blue-500 bg-blue-100 rounded-lg dark:bg-blue-800 dark:text-blue-200">
+                <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9h2v5m-2 0h4M9.408 5.5h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+                </svg>
+                <!-- <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 20">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.147 15.085a7.159 7.159 0 0 1-6.189 3.307A6.713 6.713 0 0 1 3.1 15.444c-2.679-4.513.287-8.737.888-9.548A4.373 4.373 0 0 0 5 1.608c1.287.953 6.445 3.218 5.537 10.5 1.5-1.122 2.706-3.01 2.853-6.14 1.433 1.049 3.993 5.395 1.757 9.117Z"/>
+                </svg> -->
+                <span class="sr-only">Info icon</span>
+            </div>
+            <div class="ms-3 font-normal">Click "Edit" button and click anywhere on a map to place a marker. Then click "Save" next to waypoint.</div>
+            <button id="edit-info-dismiss-btn" type="button" class="ms-auto -mx-1.5 -my-1.5 bg-white text-gray-400 hover:text-gray-900 rounded-lg focus:ring-2 focus:ring-gray-300 p-1.5 hover:bg-gray-100 inline-flex items-center justify-center h-8 w-8 dark:text-gray-500 dark:hover:text-white dark:bg-gray-800 dark:hover:bg-gray-700" data-dismiss-target="#toast-edit-info" aria-label="Close">
+                <span class="sr-only">Close</span>
+                <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                </svg>
+            </button>
         </div>
     </div>
 
@@ -110,13 +131,19 @@
             const editButtonId = `w${id}-edit`;
             const saveButtonId = `w${id}-save`;
             const waypointInner = 
-           `<p>Waypoint ${id}</p>
-            <input hidden type="number" name="${idInputId}" value="${id}">
-            <input id="${latInputId}" class="border border-black" type="text" name="${latInputId}">
-            <input id="${lngInputId}" class="border border-black" type="text" name="${lngInputId}">
-            <input id="${nameInputId}" class="border border-black" type="text" name="${nameInputId}">
-            <button id="${editButtonId}" type="button" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Edit</button>
-            <button id="${saveButtonId}" type="button" class="hidden text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-red-300 dark:hover:bg-red-400 focus:outline-none dark:focus:ring-blue-800">Save</button>`;
+           `<p class="block mb-2 font-medium text-gray-900 dark:text-white">Waypoint ${id}</p>
+            <div class="flex justify-stretch gap-2 mb-2">
+                <input hidden type="number" name="${idInputId}" value="${id}">
+                <input id="${nameInputId}" type="text" name="${nameInputId}" placeholder="waypoint name" class="grow bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+
+                <input id="${latInputId}" type="text" name="${latInputId}" readonly class="w-36 bg-gray-100 border border-gray-300 text-gray-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500">
+
+                <input id="${lngInputId}" type="text" name="${lngInputId}" readonly class="w-36 bg-gray-100 border border-gray-300 text-gray-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500">
+
+                <button id="${editButtonId}" type="button" class="w-20 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Edit</button>
+
+                <button id="${saveButtonId}" type="button" class="w-20 hidden focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg px-5 py-2.5 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">Save</button>
+            </div>`;
 
             waypointContainer.innerHTML = waypointInner;
 
@@ -174,12 +201,40 @@
             }
         }
 
+        // https://stackoverflow.com/questions/4825683/how-do-i-create-and-read-a-value-from-cookie-with-javascript
+        const setCookie = (name, value, days = 7, path = '/') => {
+            const expires = new Date(Date.now() + days * 864e5).toUTCString()
+            document.cookie = name + '=' + encodeURIComponent(value) + '; expires=' + expires + '; path=' + path
+        }
+        const getCookie = (name) => {
+            return document.cookie.split('; ').reduce((r, v) => {
+                const parts = v.split('=')
+                return parts[0] === name ? decodeURIComponent(parts[1]) : r
+            }, '')
+        }
+        const deleteCookie = (name, path) => {
+            setCookie(name, '', -1, path)
+        }
+
         // <%# Initializes buttons and prefills form (with waypoints from the server) %>
         function init () {
             const addButton = document.querySelector('.add-waypoint');
             addButton.addEventListener('click', addWaypoint);
             const removeButton = document.querySelector('.remove-waypoint');
             removeButton.addEventListener('click', removeLastWaypoint);
+
+            const toast = document.querySelector('#toast-edit-info');
+            const editToastDismissed = 'edit-info-dismissed';
+            if (getCookie(editToastDismissed) !== 'true') {
+                console.log('cookie is not there');
+                document.cookie = "name=value; expires=Fri, 31 Dec 9999 23:59:59 GMT; path=/";
+                toast.classList.remove('hidden');  
+            }
+            const editInfoDismissButton = document.querySelector('#edit-info-dismiss-btn');
+            editInfoDismissButton.addEventListener('click', function () {
+                toast.classList.add('hidden');
+                setCookie(editToastDismissed, true, 9999);
+            });
             
             prefillForm();
         }
