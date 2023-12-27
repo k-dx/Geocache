@@ -48,18 +48,37 @@ const pool = mysql.createPool({
     database: process.env.MYSQL_DATABASE,
 }).promise();
 
-async function createRoute (name, owner_id) {
+async function createRoute (name, owner_id, waypoints=null) {
     const res = await pool.query(
         'INSERT INTO Routes (name, owner_id) VALUES (?, ?)',
         [ name, owner_id ]
     );
+    const route_id = res[0].insertId;
+    if (waypoints !== null) {
+        await pool.query(
+            'INSERT INTO Waypoints (route_id, latitude, longitude, order_id, name) VALUES ?',
+            [ waypoints.sort((a, b) => a.id - b.id)
+                .map((w, _) => [ route_id, w.lat, w.lng, w.id, w.name ]) ]
+        );
+    }
 }
 
-async function updateRoute (id, name, owner_id) {
+async function updateRoute (route_id, name, owner_id, waypoints=null) {
     const res = await pool.query(
         'UPDATE Routes SET name = ? WHERE id = ? AND owner_id = ?',
-        [ name, id, owner_id ]
+        [ name, route_id, owner_id ]
     );
+    if (waypoints !== null) {
+        await pool.query(
+            'DELETE FROM Waypoints WHERE route_id = ?',
+            [ route_id ]
+        );
+        await pool.query(
+            'INSERT INTO Waypoints (route_id, latitude, longitude, order_id, name) VALUES ?',
+            [ waypoints.sort((a, b) => a.id - b.id)
+                .map((w, _) => [ route_id, w.lat, w.lng, w.id, w.name ]) ]
+        );
+    }
 }
 
 async function getRoute (id) {
@@ -75,6 +94,14 @@ async function getRoutes () {
     return rows;
 }
 
+async function getWaypoints (route_id) {
+    const res = await pool.query(
+        'SELECT * FROM Waypoints WHERE route_id = ?',
+        [ route_id ]
+    );
+    return res[0];
+}
+
 app.get('/', (req, res) => {
     res.render('index');
 })
@@ -84,31 +111,67 @@ app.get('/admin/routes/list', async (req, res) => {
 })
 app.get('/admin/routes/create', (req, res) => {
     const route = { owner_id: 1 }; // TODO: not-hardcoded owner_id
-    res.render('routes-edit', { mode: CREATE_ROUTE, route: route }); 
+    res.render('routes-edit', { 
+        mode: CREATE_ROUTE,
+        route: route,
+        waypoints: [] 
+    });
 })
+
+function getWaypointsFromRequest (req) {
+    let waypoints = [];
+    for (let i = 0; i < 500; i++) {
+        console.log(i);
+        const waypoint = {
+            id: req.body[`w${i}-id`],
+            lat: req.body[`w${i}-lat`],
+            lng: req.body[`w${i}-lng`],
+            name: req.body[`w${i}-name`],
+        };
+        if (waypoint.id === undefined) break;
+        waypoints.push(waypoint);
+    }
+    return waypoints;
+}
 app.post('/admin/routes/create', async (req, res) => {
     const name = req.body.name;
     const owner_id = req.body.owner_id;
+    const waypoints = getWaypointsFromRequest(req);
+
+    // TODO: check if the user is the owner of the route
+    // TOOD: check if the route exists
+    // TODO: check if waypoints are correct (lat, lng, ids)
+
     console.log(name, owner_id);
-    await createRoute(name, owner_id);
+    console.log(waypoints);
+
+    await createRoute(name, owner_id, waypoints);
     res.redirect('/admin/routes/list');
 })
 app.get('/admin/routes/edit/:route_id', async (req, res) => {
     const route_id = req.params.route_id;
     const route = await getRoute(route_id);
-    // TODO get waypoints
-    // const waypoints = getWaypoints(id);
+    const waypoints = await getWaypoints(route_id);
     res.render('routes-edit', { 
         mode: EDIT_ROUTE, 
-        route: route });
+        route: route,
+        waypoints: waypoints
+    });
 })
 app.post('/admin/routes/edit', async (req, res) => {
-    const id = req.body.route_id;
+    const route_id = req.body.route_id;
     const name = req.body.name;
     const owner_id = req.body.owner_id;
-    console.log(id, name, owner_id);
-    // TODO update the changes to the database
-    await updateRoute(id, name, owner_id);
+    const waypoints = getWaypointsFromRequest(req);
+    
+    console.log(route_id, name, owner_id);
+    console.log(waypoints);
+
+    // TODO: check if the user is the owner of the route
+    // TOOD: check if the route exists
+    // TODO: check if waypoints are correct (lat, lng, ids)
+
+    await updateRoute(route_id, name, owner_id, waypoints);
     res.redirect('/admin/routes/list');
 })
 
