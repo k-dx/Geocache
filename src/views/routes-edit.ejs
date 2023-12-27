@@ -16,7 +16,7 @@
     <pre>owner_id = <%= locals.route.owner_id %></pre>
     <pre>mode = <%= locals.mode %></pre> -->
     <div class="h-screen grid grid-cols-2 dark:bg-gray-900">
-        <div id="map">MAP WILL BE HERE</div>
+        <div id="map">Map should appear here. Please contact support if it doesn't.</div>
         <div class="p-4">
             <form action="/admin/routes/<%= locals.mode %>" method="post">
                 <input type="hidden" name="owner_id" value="<%= locals.route.owner_id %>">
@@ -31,6 +31,7 @@
                 </div>
                 
                 <input class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800 hover:cursor-pointer" type="submit" value="Save route">
+                <a href="/admin/routes/list" class="inline-block text-white bg-gray-700 hover:bg-gray-800 focus:ring-4 focus:ring-gray-300 font-medium rounded-lg px-5 py-2.5 me-2 mb-2 dark:bg-gray-600 dark:hover:bg-gray-700 focus:outline-none dark:focus:ring-gray-800 hover:cursor-pointer">Cancel</a>
                 <button type="button" class="add-waypoint text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Add waypoint</button>
                 <button type="button" class="remove-waypoint text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Remove waypoint</button>
             </form>
@@ -42,9 +43,6 @@
                 <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9h2v5m-2 0h4M9.408 5.5h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
                 </svg>
-                <!-- <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 20">
-                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.147 15.085a7.159 7.159 0 0 1-6.189 3.307A6.713 6.713 0 0 1 3.1 15.444c-2.679-4.513.287-8.737.888-9.548A4.373 4.373 0 0 0 5 1.608c1.287.953 6.445 3.218 5.537 10.5 1.5-1.122 2.706-3.01 2.853-6.14 1.433 1.049 3.993 5.395 1.757 9.117Z"/>
-                </svg> -->
                 <span class="sr-only">Info icon</span>
             </div>
             <div class="ms-3 font-normal">Click "Edit" button and click anywhere on a map to place a marker. Then click "Save" next to waypoint.</div>
