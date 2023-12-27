@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "start": "nodemon ./src & npx tailwindcss -i ./src/public/styles/style.css -o ./src/public/styles/output.css --watch"
+    "start": "nodemon -e ejs,js,json,css,html ./src & npx tailwindcss -i ./src/public/styles/style.css -o ./src/public/styles/output.css --watch"
   },
   "type": "module",
   "dependencies": {
