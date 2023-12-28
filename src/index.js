@@ -639,6 +639,9 @@ app.post('/account/delete', authorize, async (req, res) => {
     await deleteUser(req.user);
     res.redirect('/logout');
 })
+app.get('/about', (req, res) => {
+    res.render('about');
+})
 
 createServer(app).listen(3000);
 
