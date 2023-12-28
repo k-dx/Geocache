@@ -517,11 +517,11 @@ async function getUser(email) {
     );
     return rows[0];
 }
-app.get('/account', authorize, async (req, res) => {
+app.get('/account', [authorize, injectUser], async (req, res) => {
     const username = await getUsername(req.user);
     res.render('account-info', { email: req.user, username: username });
 })
-app.get('/account/delete', authorize, async (req, res) => {
+app.get('/account/delete', [authorize, injectUser], async (req, res) => {
     const username = await getUsername(req.user);
     res.render('account-delete', { email: req.user, username: username });
 })
