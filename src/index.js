@@ -7,6 +7,8 @@ import cookieParser from 'cookie-parser';
 import { AuthorizationCode } from 'simple-oauth2';
 import jwt from 'jsonwebtoken';
 import jwksClient from 'jwks-rsa';
+import qrcode from 'qrcode';
+import crypto from 'crypto';
 dotenv.config();
 
 const EDIT_ROUTE = 'edit';
@@ -102,6 +104,45 @@ async function getWaypoints (route_id) {
     return res[0];
 }
 
+/**
+ * @returns a random UUID that is not used by any waypoint
+ */
+async function randomWaypointUUID () {
+    let uuid = crypto.randomUUID();
+    const [rows] = await pool.query(
+        'SELECT * FROM Waypoints WHERE visit_link = ?',
+        [ uuid ]
+    );
+    if (rows.length === 0) {
+        return uuid;
+    } else {
+        return await randomWaypointUUID();
+    }
+}
+
+/**
+ * @param {?} waypoint_id 
+ * @returns full url that marks the waypoint as visited for the user
+ */
+async function getWaypointVisitLink (waypoint_id) {
+    const res = await pool.query(
+        'SELECT * FROM Waypoints WHERE id = ?',
+        [ waypoint_id ]
+    );
+    console.log(res);
+    const waypoint = res[0][0];
+    let uuid = waypoint.visit_link;
+    if (uuid === null) {
+        // generate a link and save it in the database
+        uuid = await randomWaypointUUID();
+        await pool.query(
+            'UPDATE Waypoints SET visit_link = ? WHERE id = ?',
+            [ uuid, waypoint_id ]
+        );
+    }
+    return `http://localhost:3000/visit/${uuid}`;
+}
+
 app.get('/', injectUser, (req, res) => {
     res.render('index');
 })
@@ -121,6 +162,63 @@ app.get('/admin/routes/create', [authorize, injectUser], (req, res) => {
         route: route,
         waypoints: [] 
     });
+})
+app.get('/admin/routes/summary/:route_id', [authorize, injectUser], async (req, res) => {
+    // TODO check if user is the owner of the route
+    const route_id = req.params.route_id;
+    console.log(await getRoute(route_id));
+    console.log(await getWaypoints(route_id));
+    res.render('route-summary', {
+        route: await getRoute(route_id),
+        waypoints: await getWaypoints(route_id)
+    })
+})
+
+/**
+ * Taken from https://www.npmjs.com/package/qrcode
+ * @param {string} text text to encode in the QR code
+ * @returns a base64-encoded image of the QR code
+ */
+const generateQR = async text => {
+    try {
+        return await qrcode.toDataURL(text);
+    } catch (err) {
+        console.error(err);
+        return null;
+    }
+}
+app.get('/downloads/waypoint-qr/:waypoint_id', [authorize, injectUser], async (req, res) => {
+    const waypoint_id = req.params.waypoint_id;
+    const qr = await generateQR(await getWaypointVisitLink(waypoint_id));
+    // TODO nicer error page
+    if (qr === null) {
+        res.status(500).send('Error generating QR code. Please try again.');
+    }
+    // TODO check if user is the owner of the route
+    res.render('waypoint-qr', {
+        qr_img: qr
+    })
+})
+app.get('/visit/:uuid', authorize, async (req, res) => {
+    const uuid = req.params.uuid;
+    const [rows] = await pool.query(
+        'SELECT * FROM Waypoints WHERE visit_link = ?',
+        [ uuid ]
+    );
+    if (rows.length === 0) {
+        // TODO nicer error page
+        res.status(404).send('No such waypoint');
+    }
+
+    const waypoint = rows[0];
+    const userEmail = req.signedCookies.user;
+    const userId = (await getUser(userEmail)).id;
+    // mark the waypoint as visited for the user
+    const result = await pool.query(
+        'INSERT INTO Visits (user_id, waypoint_id) VALUES (?, ?)',
+        [ userId, waypoint.id ]
+    );
+    res.end('visited');
 })
 
 function getWaypointsFromRequest (req) {

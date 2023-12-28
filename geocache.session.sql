@@ -24,7 +24,17 @@ CREATE TABLE Waypoints(
     route_id INT,
     order_id INT NOT NULL,
     name VARCHAR(255) NOT NULL
+    visit_link VARCHAR(512),
     FOREIGN KEY (route_id) REFERENCES Routes(id)
+)
+
+-- @block
+CREATE TABLE Visits(
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    waypoint_id INT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES Users(id),
+    FOREIGN KEY (waypoint_id) REFERENCES Waypoints(id)
 )
 
 -- @block
@@ -43,6 +53,9 @@ SELECT * FROM Routes;
 SELECT * FROM Waypoints;
 
 -- @block
+SELECT * FROM Visits;
+
+-- @block
 UPDATE Routes SET name = 'placeholder' WHERE id = 1 AND owner_id = 1
 
 -- @block
@@ -57,7 +70,7 @@ DELETE FROM Users WHERE id BETWEEN 1 AND 4
 
 -- @block
 ALTER TABLE Waypoints
-ADD COLUMN name VARCHAR(255) NOT NULL;
+ADD COLUMN visit_link VARCHAR(512);
 
 -- @block
 ALTER TABLE Users
