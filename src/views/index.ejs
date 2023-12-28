@@ -7,7 +7,8 @@
     <title>Geocaching</title>
 </head>
 <body>
-    <h1 class="bg-orange-300">hello world</h1>
+    <%- include('navbar') %>
+    <h1 class="bg-orange-300">hello world, <%= locals.user ? locals.user : 'Niezalogowany' %></h1>
     <a class="inline-flex justify-center rounded-lg text-sm font-semibold py-2.5 px-4 bg-cyan-900 text-white hover:bg-cyan-600 m-2" href="/admin/routes/list">Panel administracyjny</a>
     <a class="inline-flex justify-center rounded-lg text-sm font-semibold py-2.5 px-4 bg-cyan-900 text-white hover:bg-cyan-600 m-2" href="/login">Login</a>
     <a class="inline-flex justify-center rounded-lg text-sm font-semibold py-2.5 px-4 bg-cyan-900 text-white hover:bg-cyan-600 m-2" href="/register">Register</a>

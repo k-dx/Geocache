@@ -102,14 +102,16 @@ async function getWaypoints (route_id) {
     return res[0];
 }
 
-app.get('/', (req, res) => {
+app.get('/', injectUser, (req, res) => {
     res.render('index');
 })
-app.get('/admin/routes/list', async (req, res) => {
+app.get('/admin/routes/list', [authorize, injectUser], async (req, res) => {
     // TODO list all routes
-    res.render('admin-list', { routes: await getRoutes() });
+    res.render('admin-list', { 
+        routes: await getRoutes()
+    });
 })
-app.get('/admin/routes/create', (req, res) => {
+app.get('/admin/routes/create', [authorize, injectUser], (req, res) => {
     const route = { owner_id: 1 }; // TODO: not-hardcoded owner_id
     res.render('routes-edit', { 
         mode: CREATE_ROUTE,
@@ -121,7 +123,7 @@ app.get('/admin/routes/create', (req, res) => {
 function getWaypointsFromRequest (req) {
     let waypoints = [];
     for (let i = 0; i < 500; i++) {
-        console.log(i);
+        // console.log(i);
         const waypoint = {
             id: req.body[`w${i}-id`],
             lat: req.body[`w${i}-lat`],
@@ -134,6 +136,7 @@ function getWaypointsFromRequest (req) {
     return waypoints;
 }
 app.post('/admin/routes/create', async (req, res) => {
+    // TODO: check if user is logged in
     const name = req.body.name;
     const owner_id = req.body.owner_id;
     const waypoints = getWaypointsFromRequest(req);
@@ -142,13 +145,13 @@ app.post('/admin/routes/create', async (req, res) => {
     // TOOD: check if the route exists
     // TODO: check if waypoints are correct (lat, lng, ids)
 
-    console.log(name, owner_id);
-    console.log(waypoints);
+    // console.log(name, owner_id);
+    // console.log(waypoints);
 
     await createRoute(name, owner_id, waypoints);
     res.redirect('/admin/routes/list');
 })
-app.get('/admin/routes/edit/:route_id', async (req, res) => {
+app.get('/admin/routes/edit/:route_id',[authorize, injectUser], async (req, res) => {
     const route_id = req.params.route_id;
     const route = await getRoute(route_id);
     const waypoints = await getWaypoints(route_id);
@@ -164,8 +167,8 @@ app.post('/admin/routes/edit', async (req, res) => {
     const owner_id = req.body.owner_id;
     const waypoints = getWaypointsFromRequest(req);
     
-    console.log(route_id, name, owner_id);
-    console.log(waypoints);
+    // console.log(route_id, name, owner_id);
+    // console.log(waypoints);
 
     // TODO: check if the user is the owner of the route
     // TOOD: check if the route exists
@@ -233,11 +236,19 @@ app.get('/login', (req, res) => {
     if (redirectUrl) {
         message = 'You must be logged in to view this page';
     }
-    res.render('login', { message: message, google: authorizationUri });
+    res.render('login', { 
+        message: message,
+        google: authorizationUri,
+        returnUrl: redirectUrl
+    });
 });
 app.post('/login', async (req, res) => {
     const email = req.body.email;
     const password = req.body.password;
+    const redirectUrl = req.query.returnUrl || '/login/success';
+    console.log(req.body);
+    console.log(req.query);
+    console.log(req.query.returnUrl);
 
     const emailExistsRes = await emailExists(email);
     if (!emailExistsRes) {
@@ -256,7 +267,6 @@ app.post('/login', async (req, res) => {
         return;
     }
 
-    const redirectUrl = req.query.returnUrl || '/login/success';
     res.cookie('user', email, { signed: true });
     res.redirect(redirectUrl);
 })
@@ -277,7 +287,7 @@ app.get('/oauth/google', async (req, res) => {
 
     // żądanie do punktu końcowego oauth2 zamieniające code na access_token i id_token
     var result       = await oauth2.getToken(options)
-    console.log(result);
+    // console.log(result);
 
     // teraz są dwie możliwości
     // 1. użyć access_token żeby zapytać serwera kto kryje się pod wskazaną tożsamością
@@ -313,7 +323,7 @@ app.get('/oauth/google', async (req, res) => {
         });
     } 
     var profile = jwt.verify(id_token, getKey, async (err, profile) => {
-        console.log(profile);
+        // console.log(profile);
         if (!profile.email) {
             // TODO nicer error page
             res.status(500).send('No email in Google account');
@@ -337,7 +347,8 @@ app.get('/oauth/google', async (req, res) => {
 
         // zalogowanie
         res.cookie('user', profile.email, { signed: true });
-        res.redirect('/login/success');    
+        // TODO: redirect to returnUrl
+        res.redirect('/');
     });
 });
 
@@ -459,6 +470,12 @@ function authorize(req, res, next) {
     } else {
         res.redirect('/login?returnUrl=' + req.url);
     }
+}
+function injectUser(req, res, next) {
+    if (req.signedCookies.user) {
+        res.locals.user = req.signedCookies.user;
+    }
+    next();
 }
 
 app.get('/register/success', (req, res) => {

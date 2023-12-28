@@ -10,7 +10,14 @@
         <% if (locals.message) { %>
          <p><%= locals.message %></p>
         <% } %>
-        <form action="/login" method="post">
+        
+        <% 
+        let action = '/login'
+        if (locals.returnUrl) { 
+            action += '?returnUrl=' + locals.returnUrl;
+        }
+        %>
+        <form action="<%= action %>" method="post">
             <label for="email">Email</label>
             <input type="text" name="email" id="email" value="<%= typeof locals.email !== 'undefined' ? locals.email : '' %>">
             <label for="password">Password</label>
