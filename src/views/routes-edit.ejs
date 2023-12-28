@@ -14,7 +14,6 @@
         <div id="map">Map should appear here. Please contact support if it doesn't.</div>
         <div class="p-4">
             <form action="/admin/routes/<%= locals.mode %>" method="post">
-                <input type="hidden" name="owner_id" value="<%= locals.route.owner_id %>">
                 <% if (locals.mode === 'edit') { %>
                     <input type="hidden" name="route_id" value="<%= locals.route.id %>">
                 <% } %>

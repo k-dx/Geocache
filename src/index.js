@@ -155,11 +155,10 @@ app.get('/admin/routes/list', [authorize, injectUser], async (req, res) => {
         routes: await getRoutes()
     });
 })
-app.get('/admin/routes/create', [authorize, injectUser], (req, res) => {
-    const route = { owner_id: 1 }; // TODO: not-hardcoded owner_id
+app.get('/admin/routes/create', [authorize, injectUser], async (req, res) => {
     res.render('routes-edit', { 
         mode: CREATE_ROUTE,
-        route: route,
+        route: {},
         waypoints: [] 
     });
 })
@@ -236,23 +235,23 @@ function getWaypointsFromRequest (req) {
     }
     return waypoints;
 }
-app.post('/admin/routes/create', async (req, res) => {
-    // TODO: check if user is logged in
+app.post('/admin/routes/create', authorize, async (req, res) => {
+    const userEmail = req.user;
+    const userId = (await getUser(userEmail)).id;
     const name = req.body.name;
-    const owner_id = req.body.owner_id;
     const waypoints = getWaypointsFromRequest(req);
 
     // TODO: check if the user is the owner of the route
     // TOOD: check if the route exists
     // TODO: check if waypoints are correct (lat, lng, ids)
 
-    // console.log(name, owner_id);
-    // console.log(waypoints);
+    console.log(name, userId);
+    console.log(waypoints);
 
-    await createRoute(name, owner_id, waypoints);
+    await createRoute(name, userId, waypoints);
     res.redirect('/admin/routes/list');
 })
-app.get('/admin/routes/edit/:route_id',[authorize, injectUser], async (req, res) => {
+app.get('/admin/routes/edit/:route_id', [authorize, injectUser], async (req, res) => {
     const route_id = req.params.route_id;
     const route = await getRoute(route_id);
     const waypoints = await getWaypoints(route_id);
@@ -262,10 +261,11 @@ app.get('/admin/routes/edit/:route_id',[authorize, injectUser], async (req, res)
         waypoints: waypoints
     });
 })
-app.post('/admin/routes/edit', async (req, res) => {
+app.post('/admin/routes/edit', authorize,  async (req, res) => {
     const route_id = req.body.route_id;
     const name = req.body.name;
-    const owner_id = req.body.owner_id;
+    const userEmail = req.user;
+    const userId = (await getUser(userEmail)).id;
     const waypoints = getWaypointsFromRequest(req);
     
     // console.log(route_id, name, owner_id);
@@ -275,7 +275,7 @@ app.post('/admin/routes/edit', async (req, res) => {
     // TOOD: check if the route exists
     // TODO: check if waypoints are correct (lat, lng, ids)
 
-    await updateRoute(route_id, name, owner_id, waypoints);
+    await updateRoute(route_id, name, userId, waypoints);
     res.redirect('/admin/routes/list');
 })
 
