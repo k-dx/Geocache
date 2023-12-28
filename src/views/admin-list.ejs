@@ -10,13 +10,13 @@
     <%- include('navbar') %>
     <div class="container mx-auto p-8">
         <h2 class="mb-4 text-3xl font-extrabold leading-none tracking-tight text-gray-900 md:text-4xl dark:text-white">Your routes</h2>
-        <div class="flex gap-4">
-            <div class="max-w-sm min-w-max bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
-                    <a href="/admin/routes/create">
+        <div class="flex flex-wrap justify-center p-4 gap-8">
+            <div class="w-full max-w-sm bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+                <a href="/admin/routes/create">
                     <div class="p-5">
                         <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Create new route</h5>
                     </div>
-                    </a>
+                </a>
             </div>
 
             <% locals.routes.forEach(route => { %>
