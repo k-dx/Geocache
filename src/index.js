@@ -105,6 +105,9 @@ async function getWaypoints (route_id) {
 app.get('/', injectUser, (req, res) => {
     res.render('index');
 })
+app.get('/dev', injectUser, (req, res) => {
+    res.render('dev');
+})
 app.get('/admin/routes/list', [authorize, injectUser], async (req, res) => {
     // TODO list all routes
     res.render('admin-list', { 
