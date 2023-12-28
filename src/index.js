@@ -245,7 +245,7 @@ app.get('/login', (req, res) => {
 app.post('/login', async (req, res) => {
     const email = req.body.email;
     const password = req.body.password;
-    const redirectUrl = req.query.returnUrl || '/login/success';
+    const redirectUrl = req.query.returnUrl || '/';
     console.log(req.body);
     console.log(req.query);
     console.log(req.query.returnUrl);
@@ -254,7 +254,7 @@ app.post('/login', async (req, res) => {
     if (!emailExistsRes) {
         res.render('login',
                    { email: email, 
-                     message: 'email is not associated with any account',
+                     message: 'Email is not associated with any account!',
                      google: authorizationUri });
         return;
     }
@@ -262,7 +262,7 @@ app.post('/login', async (req, res) => {
     if (!passwordRes) {
         res.render('login', 
                    { email: email,
-                     message: 'password is incorrect',
+                     message: 'Password is incorrect!',
                      google: authorizationUri });
         return;
     }
@@ -272,7 +272,7 @@ app.post('/login', async (req, res) => {
 })
 
 app.get('/register', (req, res) => {
-    res.render('register');
+    res.render('register', { google: authorizationUri });
 });
 
 /**
@@ -360,10 +360,10 @@ app.get('/oauth/google', async (req, res) => {
 async function emailOk (email) {
     const nonEmpty = email !== '';
     if (!nonEmpty) 
-        return 'email cannot be empty';
+        return 'Email cannot be empty!';
     const oneAt = (email.split('@').length - 1) === 1;
     if (!oneAt)
-        return 'email must contain exactly one @';
+        return 'Email must contain exactly one @!';
 
     const [rows] = await pool.query(
         'SELECT * FROM Users WHERE email = ?',
@@ -371,7 +371,7 @@ async function emailOk (email) {
     );
     const notTaken = rows.length === 0;
     if (!notTaken)
-        return 'email is already taken';
+        return 'Email is already taken!';
     return true;
 }
 
@@ -383,14 +383,14 @@ async function emailOk (email) {
 async function usernameOk (username) {
     const nonEmpty = username !== '';
     if (!nonEmpty) 
-        return 'username cannot be empty';
+        return 'Username cannot be empty!';
     const [rows] = await pool.query(
         'SELECT * FROM Users WHERE username = ?',
         [ username ]
     );
     const notTaken = rows.length === 0;
     if (!notTaken)
-        return 'username is already taken';
+        return 'Username is already taken!';
     return true;
 }
 
@@ -402,7 +402,7 @@ async function usernameOk (username) {
 async function passwordOk (password) {
     const longEnough = password.length >= 8;
     if (!longEnough)
-        return 'password must be at least 8 characters long';
+        return 'Password must be at least 8 characters long!';
     return true;
 }
 
@@ -415,19 +415,33 @@ app.post('/register', async (req, res) => {
     
     const emailOkRes = await emailOk(email);
     if (emailOkRes !== true) {
-        res.render('register', { formdata: formdata, message: emailOkRes });
+        res.render('register', { 
+            formdata: formdata,
+            message: emailOkRes,
+            google: authorizationUri
+        });
         return;
     }
 
     const usernameOkRes = await usernameOk(username);
     if (usernameOkRes !== true) {
-        res.render('register', { formdata: formdata, message: usernameOkRes });
+        res.render('register', { 
+            formdata: formdata, 
+            message: usernameOkRes,
+            google: authorizationUri
+
+        });
         return;
     }
 
     const passwordOkRes = await passwordOk(password);
     if (passwordOkRes !== true) {
-        res.render('register', { formdata: formdata, message: passwordOkRes });
+        res.render('register', { 
+            formdata: formdata, 
+            message: passwordOkRes,
+            google: authorizationUri
+
+        });
         return;
     }
 
