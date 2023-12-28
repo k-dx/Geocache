@@ -91,9 +91,17 @@ async function getRoute (id) {
     return rows[0];
 }
 
-async function getRoutes () {
-    const [rows] = await pool.query('SELECT * FROM Routes');
-    return rows;
+async function getRoutes (userId) {
+    if (userId) {
+        const [rows] = await pool.query(
+            'SELECT * FROM Routes WHERE owner_id = ?',
+            [ userId ]
+        );
+        return rows;
+    } else {
+        const [rows] = await pool.query('SELECT * FROM Routes');
+        return rows;
+    }
 }
 
 async function getWaypoints (route_id) {
@@ -150,9 +158,10 @@ app.get('/dev', injectUser, (req, res) => {
     res.render('dev');
 })
 app.get('/admin/routes/list', [authorize, injectUser], async (req, res) => {
-    // TODO list all routes
+    const userEmail = req.user;
+    const userId = (await getUser(userEmail)).id;
     res.render('admin-list', { 
-        routes: await getRoutes()
+        routes: await getRoutes(userId)
     });
 })
 app.get('/admin/routes/create', [authorize, injectUser], async (req, res) => {
