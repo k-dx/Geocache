@@ -251,11 +251,35 @@ app.get('/visit/:uuid', authorize, async (req, res) => {
     if (rows.length === 0) {
         // TODO nicer error page
         res.status(404).send('No such waypoint');
+        return;
     }
-
+    
     const waypoint = rows[0];
     const userEmail = req.signedCookies.user;
     const userId = (await getUser(userEmail)).id;
+
+    // check if user has joined the route that the waypoint belongs to
+    const [joined_rows] = await pool.query(
+        'SELECT * FROM JoinedRoutes WHERE user_id = ? AND route_id = ?',
+        [ userId, waypoint.route_id ]
+    )
+    if (joined_rows.length === 0) {
+        const route = await getRoute(waypoint.route_id);
+        res.render('error-route-not-joined', { route: route });
+        return;
+    }
+
+    // check if user has alread visited the waypoint
+    const [visits_rows] = await pool.query(
+        'SELECT * FROM Visits WHERE user_id = ? AND waypoint_id = ?',
+        [ userId, waypoint.id ]
+    )
+    if (visits_rows.length !== 0) {
+        // TODO nicer error page
+        res.status(500).send('You have already visited this waypoint!');
+        return;
+    }
+    
     // mark the waypoint as visited for the user
     const result = await pool.query(
         'INSERT INTO Visits (user_id, waypoint_id) VALUES (?, ?)',
