@@ -261,7 +261,9 @@ app.get('/visit/:uuid', authorize, async (req, res) => {
         'INSERT INTO Visits (user_id, waypoint_id) VALUES (?, ?)',
         [ userId, waypoint.id ]
     );
-    res.end('visited');
+    res.render('waypoint-visited', {
+        waypoint: waypoint
+    })
 })
 
 function getWaypointsFromRequest (req) {
