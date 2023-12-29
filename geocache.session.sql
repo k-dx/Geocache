@@ -116,3 +116,18 @@ DELETE FROM Waypoints WHERE route_id = 2
 
 -- @block
 DROP TABLE JoinedRoutes;
+
+-- @block
+SELECT *
+FROM Routes LEFT JOIN JoinedRoutes ON Routes.id = JoinedRoutes.route_id
+WHERE JoinedRoutes.user_id = 1 OR JoinedRoutes.user_id IS NULL
+
+-- @block
+SELECT *
+FROM Routes LEFT JOIN JoinedRoutes ON Routes.id = JoinedRoutes.route_id
+
+-- @block
+SELECT Routes.id AS route_id, Routes.name, JoinedRoutes.user_id
+    FROM Routes
+    LEFT JOIN JoinedRoutes ON Routes.id = JoinedRoutes.route_id
+    WHERE (JoinedRoutes.user_id = 1 OR JoinedRoutes.user_id IS NULL)
