@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="/styles/output.css" >
+    <title>Route <%= locals.route.name %></title>
+</head>
+<body class="dark:bg-gray-900">
+    <%- include('navbar') %>
+    <div class="container mx-auto p-8 max-w-4xl">
+        <h2 class="mb-4 text-3xl font-extrabold leading-none tracking-tight text-gray-900 md:text-4xl dark:text-white"><%= locals.route.name %></h2>
+
+        <a href="/routes/join/<%= locals.route.id %>" class="focus:outline-none text-white bg-purple-700 hover:bg-purple-800 focus:ring-4 focus:ring-purple-300 font-medium rounded-lg px-5 py-2.5 mb-2 dark:bg-purple-600 dark:hover:bg-purple-700 dark:focus:ring-purple-900">Join route</a>
+
+        <div class="mt-4 relative overflow-x-auto shadow-md sm:rounded-lg">
+            <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                    <tr>
+                        <th scope="col" class="px-6 py-3">
+                            Waypoint name
+                        </th>
+                        <th scope="col" class="px-6 py-3">
+                            Latitude
+                        </th>
+                        <th scope="col" class="px-6 py-3">
+                            Longitude
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% locals.waypoints.forEach(waypoint => { %>
+                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                        <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                            <%= waypoint.name %> 
+                        </th>
+                        <td class="px-6 py-4">
+                            <%= waypoint.latitude %>
+                        </td>
+                        <td class="px-6 py-4">
+                            <%= waypoint.longitude %> 
+                        </td>
+                    </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

@@ -706,6 +706,15 @@ app.get('/routes/join/:route_id', [authorize, injectUser], async (req, res) => {
     // TODO nicer join message
     res.end('joined');
 })
+app.get('/routes/view/:route_id', injectUser, async (req, res) => {
+    const route_id = req.params.route_id;
+    const route = await getRoute(route_id);
+    const waypoints = await getWaypoints(route_id);
+    res.render('route-view', {
+        route: route,
+        waypoints: waypoints
+    })
+})
 
 createServer(app).listen(3000);
 
