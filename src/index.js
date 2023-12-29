@@ -178,11 +178,17 @@ app.get('/admin/routes/create', [authorize, injectUser], async (req, res) => {
 app.get('/admin/routes/summary/:route_id', [authorize, injectUser], async (req, res) => {
     // TODO check if user is the owner of the route
     const route_id = req.params.route_id;
-    console.log(await getRoute(route_id));
-    console.log(await getWaypoints(route_id));
+    const route = await getRoute(route_id);
+    const waypoints = await getWaypoints(route_id);
+    if (!route) {
+        res.render('error-generic', {
+            message: 'No route with this id!'
+        });
+        return;
+    }
     res.render('route-summary', {
-        route: await getRoute(route_id),
-        waypoints: await getWaypoints(route_id)
+        route: route,
+        waypoints: waypoints
     })
 })
 
@@ -203,6 +209,17 @@ const generateQR = async text => {
 // TODO: merge those two into one?
 app.get('/downloads/waypoint-qr/:waypoint_id', [authorize, injectUser], async (req, res) => {
     const waypoint_id = req.params.waypoint_id;
+    const [waypoint_entry] = await pool.query(
+        'SELECT * FROM Waypoints WHERE id = ?',
+        [ waypoint_id ]
+    );
+    if (waypoint_entry.length === 0) {
+        res.render('error-generic', {
+            message: 'No waypoint with this id.'
+        });
+        return;
+    }
+
     const waypointVisitLink = await getWaypointVisitLink(waypoint_id);
     const qr = await generateQR(waypointVisitLink);
     
@@ -226,8 +243,14 @@ app.get('/downloads/waypoint-qr/:waypoint_id', [authorize, injectUser], async (r
 })
 app.get('/downloads/waypoints-qrs/:route_id', [authorize, injectUser], async (req, res) => {
     const route_id = req.params.route_id;
-    const waypoints = await getWaypoints(route_id);
     const route = await getRoute(route_id);
+    if (!route) {
+        res.render('error-generic', {
+            message: 'No route with this id!'
+        });
+        return;
+    }
+    const waypoints = await getWaypoints(route_id);
     // TODO check if user is the owner of the route
     let qrImgs = [];
     let waypointsVisitLinks = [];
@@ -331,6 +354,12 @@ app.post('/admin/routes/create', authorize, async (req, res) => {
 app.get('/admin/routes/edit/:route_id', [authorize, injectUser], async (req, res) => {
     const route_id = req.params.route_id;
     const route = await getRoute(route_id);
+    if (!route) {
+        res.render('error-generic', {
+            message: 'No route with this id!'
+        });
+        return;
+    }
     const waypoints = await getWaypoints(route_id);
     res.render('routes-edit', { 
         mode: EDIT_ROUTE, 
@@ -728,11 +757,15 @@ app.get('/routes/join/:route_id', [authorize, injectUser], async (req, res) => {
         );
     } catch (err) {
         if (err.code === 'ER_DUP_ENTRY') {
-            // TODO nicer error page
-            res.status(500).send('You have already joined this route!');
+            res.status(500).render('error-generic', {
+                message: 'You have already joined this route!'
+            });
             return;
         } else {
-            res.status(500).send('An error occured. Please try again.');
+            console.error(`routes/join/${route_id}`, err);
+            res.render('error-generic', {
+                message: 'An error occured. Please try again.'
+            });
             return;
         }
     }
@@ -742,6 +775,12 @@ app.get('/routes/join/:route_id', [authorize, injectUser], async (req, res) => {
 app.get('/routes/view/:route_id', injectUser, async (req, res) => {
     const route_id = req.params.route_id;
     const route = await getRoute(route_id);
+    if (!route) {
+        res.render('error-generic', {
+            message: 'No route with this id!'
+        });
+        return;
+    }
     const waypoints = await getWaypoints(route_id);
     res.render('route-view', {
         route: route,
