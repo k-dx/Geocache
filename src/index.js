@@ -249,11 +249,10 @@ app.get('/visit/:uuid', authorize, async (req, res) => {
         [ uuid ]
     );
     if (rows.length === 0) {
-        // TODO nicer error page
-        res.status(404).send('No such waypoint');
+        res.render('error-generic', { message: 'No such waypoint.' });
         return;
     }
-    
+
     const waypoint = rows[0];
     const userEmail = req.signedCookies.user;
     const userId = (await getUser(userEmail)).id;
