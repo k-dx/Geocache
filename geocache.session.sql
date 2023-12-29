@@ -29,6 +29,16 @@ CREATE TABLE Waypoints(
 )
 
 -- @block
+CREATE TABLE JoinedRoutes(
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    route_id INT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES Users(id),
+    FOREIGN KEY (route_id) REFERENCES Routes(id),
+    UNIQUE(user_id, route_id)
+)
+
+-- @block
 CREATE TABLE Visits(
     id INT PRIMARY KEY AUTO_INCREMENT,
     user_id INT NOT NULL,
@@ -54,6 +64,9 @@ SELECT * FROM Waypoints;
 
 -- @block
 SELECT * FROM Visits;
+
+-- @block
+SELECT * FROM JoinedRoutes
 
 -- @block
 UPDATE Routes SET name = 'placeholder' WHERE id = 1 AND owner_id = 1
@@ -82,3 +95,6 @@ MODIFY password VARCHAR(255) NULL;
 
 -- @block
 DELETE FROM Waypoints WHERE route_id = 2
+
+-- @block
+DROP TABLE JoinedRoutes;

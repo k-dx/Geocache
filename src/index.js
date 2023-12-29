@@ -679,6 +679,33 @@ app.post('/account/delete', authorize, async (req, res) => {
 app.get('/about', injectUser, (req, res) => {
     res.render('about');
 })
+app.get('/routes/browse', injectUser, async (req, res) => {
+    console.log(await getRoutes());
+    res.render('routes-browse', { routes: await getRoutes() });
+})
+app.get('/routes/join/:route_id', [authorize, injectUser], async (req, res) => {
+    const userEmail = req.user;
+    const userId = (await getUser(userEmail)).id;
+    const route_id = req.params.route_id;
+    // update the JoinedRoutes table
+    try {
+        await pool.query(
+            'INSERT INTO JoinedRoutes (user_id, route_id) VALUES (?, ?)',
+            [ userId, route_id ]
+        );
+    } catch (err) {
+        if (err.code === 'ER_DUP_ENTRY') {
+            // TODO nicer error page
+            res.status(500).send('You have already joined this route!');
+            return;
+        } else {
+            res.status(500).send('An error occured. Please try again.');
+            return;
+        }
+    }
+    // TODO nicer join message
+    res.end('joined');
+})
 
 createServer(app).listen(3000);
 
