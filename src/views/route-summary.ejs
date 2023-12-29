@@ -13,6 +13,7 @@
         <li><%= waypoint.id %> | <%= waypoint.latitude%> | <%= waypoint.longitude %> | <%= waypoint.route_id %> | <%= waypoint.name %> | <a href="/downloads/waypoint-qr/<%= waypoint.id %>">Download QR code</a></li> 
         <% }) %>
     </ul>
+    <a href="/downloads/waypoints-qrs/<%= locals.route.id %>">Download all QR codes</a>
     <!-- <%- include('navbar') %>
     <div class="container mx-auto p-8 max-w-lg">
         <h2 class="mb-4 text-3xl font-extrabold leading-none tracking-tight text-gray-900 md:text-4xl dark:text-white">Your routes</h2>

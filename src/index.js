@@ -208,14 +208,37 @@ app.get('/downloads/waypoint-qr/:waypoint_id', [authorize, injectUser], async (r
         res.status(500).send('Error generating QR code. Please try again.');
     }
     const waypoint = await getWaypoint(waypoint_id);
-    console.log(waypoint);
     const route = await getRoute(waypoint.route_id);
-    console.log(route);
     // TODO check if user is the owner of the route
-    res.render('waypoint-qr', {
-        qr_img: qr,
-        waypoint: waypoint,
-        waypointVisitLink: waypointVisitLink,
+
+    res.render('waypoints-qrs', {
+        qr_imgs: [qr],
+        waypoints: [waypoint],
+        waypointsVisitLinks: [waypointVisitLink],
+        route: route
+    })
+})
+app.get('/downloads/waypoints-qrs/:route_id', [authorize, injectUser], async (req, res) => {
+    const route_id = req.params.route_id;
+    const waypoints = await getWaypoints(route_id);
+    const route = await getRoute(route_id);
+    // TODO check if user is the owner of the route
+    let qrImgs = [];
+    let waypointsVisitLinks = [];
+    for (const waypoint of waypoints) {
+        const waypointVisitLink = await getWaypointVisitLink(waypoint.id);
+        const qr = await generateQR(waypointVisitLink);
+        // TODO nicer error page
+        if (qr === null) {
+            res.status(500).end('Error generating QR code. Please try again.');
+        }
+        waypointsVisitLinks.push(waypointVisitLink);
+        qrImgs.push(qr);
+    }
+    res.render('waypoints-qrs', {
+        qr_imgs: qrImgs,
+        waypoints: waypoints,
+        waypointsVisitLinks: waypointsVisitLinks,
         route: route
     })
 })

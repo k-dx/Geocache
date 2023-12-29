@@ -26,19 +26,21 @@
 </head>
 <body>
     <div class="info-message">
-        Please print this page. It will look correctly only when printed. This message will not be printed. 
+        Please print this page in portrait orientation. It will look correctly only when printed in portrait. This message will not be printed. 
         <button class="print-button" onclick="window.print()">Click to print</button>
     </div>
-    <div class="p-4">
-        <h1 class="text-4xl font-bold mb-4">Geocache waypoint</h1>
-        <h2 class="text-3xl mb-2">Route: <%= locals.route.name %></h2>
-        <h2 class="text-3xl mb-2">Waypoint: <%= locals.waypoint.name %></h2>
-        <h3 class="text-3xl mb-2">Scan the QR Code or go to link below.</h3>
-        <img src="<%= locals.qr_img %>" alt="qr code" class="mx-auto w-3/4">
-        <div class="w-full text-center text-2xl">
-            <%= locals.waypointVisitLink %>
+    <% for( let i = 0; i < locals.waypoints.length; i++ ) { %>
+        <div class="p-4 h-full break-after-page">
+            <h1 class="text-4xl font-bold mb-4">Geocache waypoint</h1>
+            <h2 class="text-3xl mb-2">Route: <%= locals.route.name %></h2>
+            <h2 class="text-3xl mb-2">Waypoint: <%= locals.waypoints[i].name %></h2>
+            <h3 class="text-3xl mb-2">Scan the QR Code or go to link below.</h3>
+            <img src="<%= locals.qr_imgs[i] %>" alt="qr code" class="mx-auto w-3/4">
+            <div class="w-full text-center text-2xl">
+                <%= locals.waypointsVisitLinks[i] %>
+            </div>
         </div>
-    </div>
+    <% } %>
     <script>
         print()
     </script>
