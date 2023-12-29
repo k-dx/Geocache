@@ -199,14 +199,20 @@ const generateQR = async text => {
         return null;
     }
 }
+
+// TODO: merge those two into one?
 app.get('/downloads/waypoint-qr/:waypoint_id', [authorize, injectUser], async (req, res) => {
     const waypoint_id = req.params.waypoint_id;
     const waypointVisitLink = await getWaypointVisitLink(waypoint_id);
     const qr = await generateQR(waypointVisitLink);
-    // TODO nicer error page
+    
     if (qr === null) {
-        res.status(500).send('Error generating QR code. Please try again.');
+        res.render('error-generic', {
+            message: 'Error generating QR code. Please try again.'
+        });
+        return;
     }
+
     const waypoint = await getWaypoint(waypoint_id);
     const route = await getRoute(waypoint.route_id);
     // TODO check if user is the owner of the route
@@ -228,9 +234,10 @@ app.get('/downloads/waypoints-qrs/:route_id', [authorize, injectUser], async (re
     for (const waypoint of waypoints) {
         const waypointVisitLink = await getWaypointVisitLink(waypoint.id);
         const qr = await generateQR(waypointVisitLink);
-        // TODO nicer error page
         if (qr === null) {
-            res.status(500).end('Error generating QR code. Please try again.');
+            res.render('error-generic', 
+                { message: 'Error generating QR code. Please try again.' });
+            return;
         }
         waypointsVisitLinks.push(waypointVisitLink);
         qrImgs.push(qr);
@@ -274,8 +281,9 @@ app.get('/visit/:uuid', authorize, async (req, res) => {
         [ userId, waypoint.id ]
     )
     if (visits_rows.length !== 0) {
-        // TODO nicer error page
-        res.status(500).send('You have already visited this waypoint!');
+        res.render('error-generic', {
+            message: 'You have already visited this waypoint!'
+        });
         return;
     }
     
@@ -495,8 +503,10 @@ app.get('/oauth/google', async (req, res) => {
     var profile = jwt.verify(id_token, getKey, async (err, profile) => {
         // console.log(profile);
         if (!profile.email) {
-            // TODO nicer error page
-            res.status(500).send('No email in Google account');
+            res.render('error-generic', {
+                message: 'No email in Google account'
+            });
+            return;
         }
 
         let user = await getUser(profile.email);
