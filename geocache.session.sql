@@ -44,7 +44,8 @@ CREATE TABLE Visits(
     user_id INT NOT NULL,
     waypoint_id INT NOT NULL,
     FOREIGN KEY (user_id) REFERENCES Users(id),
-    FOREIGN KEY (waypoint_id) REFERENCES Waypoints(id)
+    FOREIGN KEY (waypoint_id) REFERENCES Waypoints(id),
+    UNIQUE(user_id, waypoint_id)
 )
 
 -- @block
