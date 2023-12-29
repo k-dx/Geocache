@@ -190,6 +190,44 @@ app.get('/admin/routes/summary/:route_id', [authorize, injectUser], async (req, 
         waypoints: waypoints
     })
 })
+app.get('/admin/routes/delete/:route_id', [authorize, injectUser], async (req, res) => {
+    // check if user is the owner of the route
+    const route_id = req.params.route_id;
+    const route = await getRoute(route_id);
+    if (!route) {
+        res.render('error-generic', {
+            message: 'No route with this id!'
+        });
+        return;
+    }
+    res.render('route-delete', {
+        route: route
+    });
+})
+app.post('/admin/routes/delete/:route_id', [authorize, injectUser], async (req, res) => {
+    const route_id = req.params.route_id;
+
+    const route = await getRoute(route_id);
+    if (!route) {
+        res.render('error-generic', {
+            message: 'No route with this id!'
+        });
+        return;
+    }
+
+    // TODO check if user is the owner of the route
+    await pool.query(
+        'DELETE FROM Waypoints WHERE route_id = ?',
+        [ route_id ]
+    );
+
+    await pool.query(
+        'DELETE FROM Routes WHERE id = ?',
+        [ route_id ]
+    );
+
+    res.redirect('/admin/routes/list');
+})
 
 /**
  * Taken from https://www.npmjs.com/package/qrcode
