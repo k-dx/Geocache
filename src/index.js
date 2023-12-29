@@ -162,8 +162,7 @@ app.get('/dev', injectUser, (req, res) => {
     res.render('dev');
 })
 app.get('/admin/routes/list', [authorize, injectUser], async (req, res) => {
-    const userEmail = req.user;
-    const userId = (await getUser(userEmail)).id;
+    const userId = req.user;
     res.render('admin-list', { 
         routes: await getRoutes(userId)
     });
@@ -284,8 +283,7 @@ app.get('/visit/:uuid', authorize, async (req, res) => {
     }
 
     const waypoint = rows[0];
-    const userEmail = req.signedCookies.user;
-    const userId = (await getUser(userEmail)).id;
+    const userId = req.signedCookies.user;
 
     // check if user has joined the route that the waypoint belongs to
     const [joined_rows] = await pool.query(
@@ -336,8 +334,7 @@ function getWaypointsFromRequest (req) {
     return waypoints;
 }
 app.post('/admin/routes/create', authorize, async (req, res) => {
-    const userEmail = req.user;
-    const userId = (await getUser(userEmail)).id;
+    const userId = req.user;
     const name = req.body.name;
     const waypoints = getWaypointsFromRequest(req);
 
@@ -370,8 +367,7 @@ app.get('/admin/routes/edit/:route_id', [authorize, injectUser], async (req, res
 app.post('/admin/routes/edit', authorize,  async (req, res) => {
     const route_id = req.body.route_id;
     const name = req.body.name;
-    const userEmail = req.user;
-    const userId = (await getUser(userEmail)).id;
+    const userId = req.user;
     const waypoints = getWaypointsFromRequest(req);
     
     // console.log(route_id, name, owner_id);
@@ -474,7 +470,9 @@ app.post('/login', async (req, res) => {
         return;
     }
 
-    res.cookie('user', email, { signed: true });
+    const user = await getUserByEmail(email);
+
+    res = setUserCookie(res, user.id);
     res.redirect(redirectUrl);
 })
 
@@ -530,6 +528,7 @@ app.get('/oauth/google', async (req, res) => {
         });
     } 
     var profile = jwt.verify(id_token, getKey, async (err, profile) => {
+        // TODO handle err
         // console.log(profile);
         if (!profile.email) {
             res.render('error-generic', {
@@ -538,7 +537,7 @@ app.get('/oauth/google', async (req, res) => {
             return;
         }
 
-        let user = await getUser(profile.email);
+        let user = await getUserByEmail(profile.email);
         if (!user) {
             // utworzenie konta
             user = await createUser({
@@ -555,11 +554,16 @@ app.get('/oauth/google', async (req, res) => {
         }
 
         // zalogowanie
-        res.cookie('user', profile.email, { signed: true });
+        res = setUserCookie(res, user.id);
         // TODO: redirect to returnUrl
         res.redirect('/');
     });
 });
+
+function setUserCookie (res, userId) {
+    res.cookie('user', userId, { signed: true });
+    return res;
+}
 
 /**
  * Checks if email is okay to register
@@ -712,14 +716,14 @@ app.get('/logout', (req, res) => {
     res.redirect('/')
 });
 
-async function getUsername(email) {
+async function getUser(id) {
     const [rows] = await pool.query(
-        'SELECT * FROM Users WHERE email = ?',
-        [ email ]
+        'SELECT * FROM Users WHERE id = ?',
+        [ id ]
     );
-    return rows[0].username;
+    return rows[0];
 }
-async function getUser(email) {
+async function getUserByEmail(email) {
     const [rows] = await pool.query(
         'SELECT * FROM Users WHERE email = ?',
         [ email ]
@@ -727,12 +731,12 @@ async function getUser(email) {
     return rows[0];
 }
 app.get('/account', [authorize, injectUser], async (req, res) => {
-    const username = await getUsername(req.user);
-    res.render('account-info', { email: req.user, username: username });
+    const user = await getUser(req.user);
+    res.render('account-info', { email: user.email, username: user.username });
 })
 app.get('/account/delete', [authorize, injectUser], async (req, res) => {
-    const username = await getUsername(req.user);
-    res.render('account-delete', { email: req.user, username: username });
+    const user = await getUser(req.user);
+    res.render('account-delete', { email: user.email, username: user.username });
 })
 app.post('/account/delete', authorize, async (req, res) => {
     await deleteUser(req.user);
@@ -746,8 +750,7 @@ app.get('/routes/browse', injectUser, async (req, res) => {
     res.render('routes-browse', { routes: await getRoutes() });
 })
 app.get('/routes/join/:route_id', [authorize, injectUser], async (req, res) => {
-    const userEmail = req.user;
-    const userId = (await getUser(userEmail)).id;
+    const userId = req.user;
     const route_id = req.params.route_id;
     // update the JoinedRoutes table
     try {
