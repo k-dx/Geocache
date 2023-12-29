@@ -48,6 +48,23 @@ CREATE TABLE Visits(
     UNIQUE(user_id, waypoint_id)
 )
 
+
+-- @block
+SELECT * FROM Routes 
+LEFT JOIN JoinedRoutes ON Routes.id = JoinedRoutes.route_id
+WHERE JoinedRoutes.user_id = 10 OR JoinedRoutes.user_id IS NULL
+
+-- @block
+SELECT 
+    Routes.id,
+    Routes.name,
+    CASE 
+        WHEN JoinedRoutes.user_id IS NULL THEN 'No'
+        ELSE 'Yes'
+    END AS has_joined
+FROM Routes
+LEFT JOIN JoinedRoutes ON Routes.id = JoinedRoutes.route_id AND JoinedRoutes.user_id = 13;
+
 -- @block
 SELECT MAX(id) FROM Routes
 

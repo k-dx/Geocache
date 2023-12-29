@@ -784,8 +784,21 @@ app.get('/about', injectUser, (req, res) => {
     res.render('about');
 })
 app.get('/routes/browse', injectUser, async (req, res) => {
-    console.log(await getRoutes());
-    res.render('routes-browse', { routes: await getRoutes() });
+    const userId = req.signedCookies.user;
+    let routes = [];
+    if (userId) {
+        const routesQuery = await pool.query(
+            `SELECT Routes.*, JoinedRoutes.user_id
+            FROM Routes
+            LEFT JOIN JoinedRoutes ON Routes.id = JoinedRoutes.route_id
+            WHERE JoinedRoutes.user_id = ? OR JoinedRoutes.user_id IS NULL`,
+            [ userId ]
+        );
+        routes = routesQuery[0];
+    } else {
+        routes = await getRoutes();
+    }
+    res.render('routes-browse', { routes: routes });
 })
 app.get('/routes/join/:route_id', [authorize, injectUser], async (req, res) => {
     const userId = req.user;
@@ -822,10 +835,20 @@ app.get('/routes/view/:route_id', injectUser, async (req, res) => {
         });
         return;
     }
+    const userId = req.signedCookies.user;
+    let joined = false;
+    if (userId) {
+        const joinedQuery = await pool.query(
+            'SELECT * FROM JoinedRoutes WHERE route_id = ? AND user_id = ?',
+            [ route_id, userId ]
+        );
+        joined = joinedQuery[0].length === 1;
+    }
     const waypoints = await getWaypoints(route_id);
     res.render('route-view', {
         route: route,
-        waypoints: waypoints
+        waypoints: waypoints,
+        joined: joined,
     })
 })
 
