@@ -24,7 +24,7 @@ CREATE TABLE Waypoints(
     route_id INT,
     order_id INT NOT NULL,
     name VARCHAR(255) NOT NULL
-    visit_link VARCHAR(512),
+    uuid VARCHAR(512),
     FOREIGN KEY (route_id) REFERENCES Routes(id)
 )
 
@@ -70,7 +70,7 @@ DELETE FROM Users WHERE id BETWEEN 1 AND 4
 
 -- @block
 ALTER TABLE Waypoints
-ADD COLUMN visit_link VARCHAR(512);
+RENAME COLUMN visit_link TO uuid;
 
 -- @block
 ALTER TABLE Users

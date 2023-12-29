@@ -126,7 +126,7 @@ async function getWaypoint (waypoint_id) {
 async function randomWaypointUUID () {
     let uuid = crypto.randomUUID();
     const [rows] = await pool.query(
-        'SELECT * FROM Waypoints WHERE visit_link = ?',
+        'SELECT * FROM Waypoints WHERE uuid = ?',
         [ uuid ]
     );
     if (rows.length === 0) {
@@ -143,12 +143,12 @@ async function randomWaypointUUID () {
 async function getWaypointVisitLink (waypoint_id) {
     const waypoint = await getWaypoint(waypoint_id);
 
-    let uuid = waypoint.visit_link;
+    let uuid = waypoint.uuid;
     if (uuid === null) {
         // generate a link and save it in the database
         uuid = await randomWaypointUUID();
         await pool.query(
-            'UPDATE Waypoints SET visit_link = ? WHERE id = ?',
+            'UPDATE Waypoints SET uuid = ? WHERE id = ?',
             [ uuid, waypoint_id ]
         );
     }
@@ -245,7 +245,7 @@ app.get('/downloads/waypoints-qrs/:route_id', [authorize, injectUser], async (re
 app.get('/visit/:uuid', authorize, async (req, res) => {
     const uuid = req.params.uuid;
     const [rows] = await pool.query(
-        'SELECT * FROM Waypoints WHERE visit_link = ?',
+        'SELECT * FROM Waypoints WHERE uuid = ?',
         [ uuid ]
     );
     if (rows.length === 0) {
