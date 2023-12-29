@@ -674,7 +674,7 @@ app.post('/account/delete', authorize, async (req, res) => {
     await deleteUser(req.user);
     res.redirect('/logout');
 })
-app.get('/about', (req, res) => {
+app.get('/about', injectUser, (req, res) => {
     res.render('about');
 })
 
