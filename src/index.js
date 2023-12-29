@@ -112,6 +112,14 @@ async function getWaypoints (route_id) {
     return res[0];
 }
 
+async function getWaypoint (waypoint_id) {
+    const res = await pool.query(
+        'SELECT * FROM Waypoints WHERE id = ?',
+        [ waypoint_id ]
+    );
+    return res[0][0];
+}
+
 /**
  * @returns a random UUID that is not used by any waypoint
  */
@@ -133,12 +141,8 @@ async function randomWaypointUUID () {
  * @returns full url that marks the waypoint as visited for the user
  */
 async function getWaypointVisitLink (waypoint_id) {
-    const res = await pool.query(
-        'SELECT * FROM Waypoints WHERE id = ?',
-        [ waypoint_id ]
-    );
-    console.log(res);
-    const waypoint = res[0][0];
+    const waypoint = await getWaypoint(waypoint_id);
+
     let uuid = waypoint.visit_link;
     if (uuid === null) {
         // generate a link and save it in the database
@@ -197,14 +201,22 @@ const generateQR = async text => {
 }
 app.get('/downloads/waypoint-qr/:waypoint_id', [authorize, injectUser], async (req, res) => {
     const waypoint_id = req.params.waypoint_id;
-    const qr = await generateQR(await getWaypointVisitLink(waypoint_id));
+    const waypointVisitLink = await getWaypointVisitLink(waypoint_id);
+    const qr = await generateQR(waypointVisitLink);
     // TODO nicer error page
     if (qr === null) {
         res.status(500).send('Error generating QR code. Please try again.');
     }
+    const waypoint = await getWaypoint(waypoint_id);
+    console.log(waypoint);
+    const route = await getRoute(waypoint.route_id);
+    console.log(route);
     // TODO check if user is the owner of the route
     res.render('waypoint-qr', {
-        qr_img: qr
+        qr_img: qr,
+        waypoint: waypoint,
+        waypointVisitLink: waypointVisitLink,
+        route: route
     })
 })
 app.get('/visit/:uuid', authorize, async (req, res) => {
