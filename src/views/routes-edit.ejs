@@ -11,7 +11,10 @@
     <pre>owner_id = <%= locals.route.owner_id %></pre>
     <pre>mode = <%= locals.mode %></pre> -->
     <div class="h-screen grid grid-cols-2 dark:bg-gray-900">
-        <div id="map">Map should appear here. Please contact support if it doesn't.</div>
+        <div id="map">
+            Map should appear here. Please contact support if it doesn't.
+            <%# Loaded by script %>
+        </div>
         <div class="p-4 overflow-auto">
             <form action="/admin/routes/<%= locals.mode %>" method="post">
                 <% if (locals.mode === 'edit') { %>
@@ -53,7 +56,6 @@
       src="https://maps.googleapis.com/maps/api/js?key=***REMOVED***&callback=initMap&v=weekly"
       defer
     ></script>
-    
     <script>
         var map;
         var markers = [];
@@ -147,6 +149,7 @@
 
             const marker = new google.maps.Marker({
                 position: { lat: Number(lat), lng: Number(lng) },
+                label: { text: String(id), color: 'white' },
                 map: map,
                 visible: Boolean(id_ !== null)
             });

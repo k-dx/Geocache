@@ -1,0 +1,64 @@
+<script>
+    var map;
+    var markers = [];
+    var currentEditListener = null;
+
+    function initMap() {
+        var initialLocation = {
+            lat: 0,
+            lng: 0
+        };
+
+        map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 1,
+            center: initialLocation,
+            clickableIcons: false // Enable click events on POIs
+        });
+
+        init();
+    }
+
+    // // Adds a marker to the map and push to the array.
+    // function addMarker(location) {
+    //     var marker = new google.maps.Marker({
+    //         position: location,
+    //         map: map
+    //     });
+    //     markers.push(marker);
+    // }
+
+    // <%# Adds a waypoint to the map. %>
+    function addWaypoint ({ id_=null, lat=null, lng=null, name='' } = {}) {
+        const id = id_ !== null ? id_ : getNextId();
+        const marker = new google.maps.Marker({
+            position: { lat: Number(lat), lng: Number(lng) },
+            label: { text: String(id), color: 'white' },
+            map: map,
+            visible: Boolean(id_ !== null)
+        });
+        markers.push(marker);
+    }
+
+    function fitViewToMarkers () {
+        const bounds = new google.maps.LatLngBounds();
+        markers.forEach(marker => {
+            bounds.extend(marker.getPosition());
+        });
+        map.fitBounds(bounds);
+    }
+
+    // <%# Prefills map with waypoints from the server %>
+    function init () {        
+        const waypoints = <%- JSON.stringify(locals.waypoints) %>;
+        waypoints.forEach(waypoint => {
+            console.log(waypoint.lat);
+            addWaypoint({
+                id_: waypoint.order_id,
+                lat: waypoint.latitude,
+                lng: waypoint.longitude,
+                name: waypoint.name
+            });
+        });
+        fitViewToMarkers();
+    }
+</script>

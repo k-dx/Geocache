@@ -23,9 +23,14 @@
     <div class="container mx-auto p-8 max-w-4xl">
         <h2 class="mb-4 text-3xl font-extrabold leading-none tracking-tight text-gray-900 md:text-4xl dark:text-white"><%= locals.route.name %></h2>
 
-        <a href="/downloads/waypoints-qrs/<%= locals.route.id %>" class="focus:outline-none text-white bg-purple-700 hover:bg-purple-800 focus:ring-4 focus:ring-purple-300 font-medium rounded-lg px-5 py-2.5 mb-2 dark:bg-purple-600 dark:hover:bg-purple-700 dark:focus:ring-purple-900">Download all QR codes</a>
+        <div class="h-96 mb-6" id="map">
+            Map should appear here. Please contact support if it doesn't.
+            <%# Loaded by script %>
+        </div>
 
-        <div class="mt-4 relative overflow-x-auto shadow-md sm:rounded-lg">
+        <a href="/downloads/waypoints-qrs/<%= locals.route.id %>" class="inline-block focus:outline-none text-white bg-purple-700 hover:bg-purple-800 focus:ring-4 focus:ring-purple-300 font-medium rounded-lg px-5 py-2.5 mb-6 dark:bg-purple-600 dark:hover:bg-purple-700 dark:focus:ring-purple-900">Download all QR codes</a>
+
+        <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
             <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
                 <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                     <tr>
@@ -118,6 +123,11 @@
 
     </div>
 
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=***REMOVED***&callback=initMap&v=weekly"
+      defer
+    ></script>
+    <%- include('map-display-waypoints-script') %>
     <%- include('end-scripts') %>
 </body>
 </html>
