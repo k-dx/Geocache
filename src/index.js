@@ -420,9 +420,6 @@ app.post('/register', async (req, res) => {
 app.get('/register/success', (req, res) => {
     res.render('register-success');
 })
-app.get('/login/success', authorize, (req, res) => {
-    res.render('login-success');
-})
 app.get('/logout', (req, res) => {
     res.cookie('user', '', { maxAge: -1 } );
     res.redirect('/')
