@@ -127,22 +127,24 @@
         // <%# Adds a waypoint. 
         // If no arguments given, then it is "empty" and not visible on the map.
         // Otherwise it is visible on the map and has its form filled with current data. %>
-        function addWaypoint ({ id_=null, lat=null, lng=null, name='' } = {}) {
-            const id = id_ !== null ? id_ : getNextId();
+        function addWaypoint ({ id=null, orderId_=null, lat=null, lng=null, name='' } = {}) {
+            const orderId = orderId_ !== null ? orderId_ : getNextId();
             const waypointContainer = document.createElement('div');
             waypointContainer.classList.add('waypoint-entry');
-            waypointContainer.dataset.id = id;
+            waypointContainer.dataset.id = orderId;
 
-            const idInputId = `w${id}-id`;
-            const latInputId = `w${id}-lat`;
-            const lngInputId = `w${id}-lng`;
-            const nameInputId = `w${id}-name`;
-            const editButtonId = `w${id}-edit`;
-            const saveButtonId = `w${id}-save`;
+            const idInputId = `w${orderId}-id`;
+            const orderIdInputId = `w${orderId}-order-id`;
+            const latInputId = `w${orderId}-lat`;
+            const lngInputId = `w${orderId}-lng`;
+            const nameInputId = `w${orderId}-name`;
+            const editButtonId = `w${orderId}-edit`;
+            const saveButtonId = `w${orderId}-save`;
             const waypointInner = 
-           `<p class="block mb-2 font-medium text-gray-900 dark:text-white">Waypoint ${id}</p>
+           `<p class="block mb-2 font-medium text-gray-900 dark:text-white">Waypoint ${orderId}</p>
             <div class="flex flex-wrap justify-stretch gap-2 mb-2">
                 <input hidden type="number" name="${idInputId}" value="${id}">
+                <input hidden type="number" name="${orderIdInputId}" value="${orderId}">
                 <input id="${nameInputId}" type="text" name="${nameInputId}" placeholder="waypoint name"  class="grow bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
 
                 <input id="${latInputId}" type="text" name="${latInputId}" readonly class="w-36 bg-gray-100 border border-gray-300 text-gray-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500">
@@ -161,9 +163,9 @@
 
             const marker = new google.maps.Marker({
                 position: { lat: Number(lat), lng: Number(lng) },
-                label: { text: String(id), color: 'white' },
+                label: { text: String(orderId), color: 'white' },
                 map: map,
-                visible: Boolean(id_ !== null)
+                visible: Boolean(orderId_ !== null)
             });
             markers.push(marker);
             const latInput = document.querySelector(`#${latInputId}`);
@@ -175,14 +177,14 @@
             const editButton = document.querySelector(`#${editButtonId}`);
             const saveButton = document.querySelector(`#${saveButtonId}`);
             editButton.addEventListener('click', function () {
-                console.log(`edit button ${id} clicked`);
-                currentEditListener = map.addListener('click', clickListener.bind({id: id}));
+                console.log(`edit button ${orderId} clicked`);
+                currentEditListener = map.addListener('click', clickListener.bind({id: orderId}));
 
                 editButton.classList.add('hidden');
                 saveButton.classList.remove('hidden');
             });
             saveButton.addEventListener('click', function () {
-                console.log(`save button ${id} clicked`);
+                console.log(`save button ${orderId} clicked`);
                 google.maps.event.removeListener(currentEditListener);
 
                 editButton.classList.remove('hidden');
@@ -202,7 +204,8 @@
                 waypoints.forEach(waypoint => {
                     console.log(waypoint.lat);
                     addWaypoint({
-                        id_: waypoint.order_id,
+                        id: waypoint.id,
+                        orderId_: waypoint.orderId,
                         lat: waypoint.latitude,
                         lng: waypoint.longitude,
                         name: waypoint.name

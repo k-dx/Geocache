@@ -59,8 +59,8 @@ async function createRoute (name, ownerId, waypoints=null) {
     if (waypoints !== null) {
         await pool.query(
             'INSERT INTO Waypoints (route_id, latitude, longitude, order_id, name) VALUES ?',
-            [ waypoints.sort((a, b) => a.id - b.id)
-                .map((w, _) => [ routeId, w.lat, w.lng, w.id, w.name ]) ]
+            [ waypoints.sort((a, b) => a.orderId - b.orderId)
+                .map((w, _) => [ routeId, w.lat, w.lng, w.orderId, w.name ]) ]
         );
     }
 }
@@ -70,16 +70,44 @@ async function updateRoute (routeId, name, ownerId, waypoints=null) {
         'UPDATE Routes SET name = ? WHERE id = ? AND owner_id = ?',
         [ name, routeId, ownerId ]
     );
-    if (waypoints !== null) {
+
+    // delete waypoints that are in the database but not on the waypoints list
+    let waypointsToDelete = [];
+    const [waypointsInDB] = await pool.query(
+        'SELECT * FROM Waypoints WHERE route_id = ?',
+        [ routeId ]
+    );
+    for (const waypointInDB of waypointsInDB) {
+        if (!waypoints.some(w => Number(w.id) === Number(waypointInDB.id))) {
+            waypointsToDelete.push(waypointInDB.id);
+        }
+    }
+    for (const waypointToDeleteId of waypointsToDelete) {
         await pool.query(
-            'DELETE FROM Waypoints WHERE route_id = ?',
-            [ routeId ]
+            'DELETE FROM Waypoints WHERE id = ?',
+            [ waypointToDeleteId ]
         );
-        await pool.query(
-            'INSERT INTO Waypoints (route_id, latitude, longitude, order_id, name) VALUES ?',
-            [ waypoints.sort((a, b) => a.id - b.id)
-                .map((w, _) => [ routeId, w.lat, w.lng, w.id, w.name ]) ]
+    }
+
+    // we want to  those waypoints that are EITHER:
+    // 1. if the waypoint is already in the database and belong to the edited routeId, then update it 
+    // 2. if the waypoint is not in the database then create it
+    for (const waypoint of waypoints) {
+        const [rows] = await pool.query(
+            'SELECT * FROM Waypoints WHERE id = ?',
+            [ waypoint.id ]
         );
+        if (rows.length === 0) { // new waypoint
+            await pool.query(
+                'INSERT INTO Waypoints (route_id, latitude, longitude, order_id, name) VALUES (?, ?, ?, ?, ?)',
+                [ routeId, waypoint.lat, waypoint.lng, waypoint.orderId, waypoint.name ]
+            );
+        } else if (rows[0].route_id === routeId) { // waypoint belongs to the route we are editing
+            await pool.query(
+                'UPDATE Waypoints SET latitude = ?, longitude = ?, name = ? WHERE id = ?',
+                [ waypoint.lat, waypoint.lng, waypoint.name, waypoint.id ]
+            );
+        }
     }
 }
 
@@ -362,11 +390,12 @@ function getWaypointsFromRequest (req) {
         // console.log(i);
         const waypoint = {
             id: req.body[`w${i}-id`],
+            orderId: req.body[`w${i}-order-id`],
             lat: req.body[`w${i}-lat`],
             lng: req.body[`w${i}-lng`],
             name: req.body[`w${i}-name`],
         };
-        if (waypoint.id === undefined) break;
+        if (waypoint.orderId === undefined) break;
         waypoints.push(waypoint);
     }
     return waypoints;
@@ -384,22 +413,23 @@ function validateRoute (route, waypoints) {
     } 
     for (const waypoint of waypoints) {
         if (waypoint.name === '') {
-            message = `Waypoint name cannot be empty! (Waypoint ${waypoint.id})`;
+            message = `Waypoint name cannot be empty! (Waypoint ${waypoint.orderId})`;
             break;
         }
 
         if (waypoint.lat === '' || waypoint.lng === '') {
-            message = `Waypoint coordinates cannot be empty! (Waypoint ${waypoint.id})`;
+            message = `Waypoint coordinates cannot be empty! (Waypoint ${waypoint.orderId})`;
             break;   
         }
     }
     if (message !== null) {
         const waypointsResponse = waypoints.map((w, _) => {
             return {
-                order_id: w.id,
+                orderId: w.orderId,
                 latitude: w.lat,
                 longitude: w.lng,
                 name: w.name,
+                id: w.id
             }
         });
 
