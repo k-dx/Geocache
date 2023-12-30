@@ -544,6 +544,7 @@ async function hashPassword (password) {
  * @param {string} username 
  * @param {string} password (not hashed)
  * @param {string} googleId
+ * @returns id of the created user
  */
 async function createUser({email, username, password=null, googleId=null}) {
     if (password !== null) {
@@ -552,14 +553,14 @@ async function createUser({email, username, password=null, googleId=null}) {
             'INSERT INTO Users (email, username, password) VALUES (?, ?, ?)',
             [ email, username, hash ]
         );
-        return res;
+        return res[0].insertId;
     }
     else if (googleId !== null) {
         const res = await pool.query(
             'INSERT INTO Users (email, username, googleId) VALUES (?, ?, ?)',
             [ email, username, googleId ]
         );
-        return res;
+        return res[0].insertId;
     }
     else {
         throw new Error('Either password or googleId must be provided');
@@ -688,13 +689,15 @@ app.get('/oauth/google', async (req, res) => {
 
         let user = await getUserByEmail(profile.email);
         if (!user) {
-            // utworzenie konta
-            user = await createUser({
+            // create account
+            const userId = await createUser({
                 email: profile.email,
                 username: profile.name,
                 googleId: profile.sub
             });
+            user = await getUser(userId);
         }
+        console.log(user);
         if (user.googleId === null) {
             await linkAccountWithGoogle({
                 userId: user.id,
