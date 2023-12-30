@@ -899,22 +899,18 @@ app.get('/about', injectUser, (req, res) => {
 })
 app.get('/routes/browse', injectUser, async (req, res) => {
     const userId = req.signedCookies.user;
-    let routes = [];
-    // TODO: fix this!
-    // if (userId) {
-    //     const routesQuery = await pool.query(
-    //         `SELECT Routes.*, JoinedRoutes.user_id
-    //         FROM Routes
-    //         LEFT JOIN JoinedRoutes ON Routes.id = JoinedRoutes.route_id
-    //         WHERE JoinedRoutes.user_id = ? OR JoinedRoutes.user_id IS NULL`,
-    //         [ userId ]
-    //     );
-    //     routes = routesQuery[0];
-    //     console.log(routes);
-    // } else {
-    //     routes = await getRoutes();
-    // }
-    routes = await getRoutes();
+    const routes = await getRoutes();
+    const joinedRoutesQuery = await pool.query(
+        'SELECT * FROM JoinedRoutes WHERE user_id = ?',
+        [ userId ]
+    );
+    const joinedRoutes = joinedRoutesQuery[0];
+    for (const route of routes) {
+        if (joinedRoutes.some(r => r.route_id === route.id)) {
+            route.joined = true;
+        }
+    }
+
     res.render('routes-browse', { routes: routes });
 })
 app.get('/routes/join/:route_id', [authorize, injectUser], async (req, res) => {
