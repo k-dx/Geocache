@@ -9,6 +9,7 @@ import jwt from 'jsonwebtoken';
 import jwksClient from 'jwks-rsa';
 import qrcode from 'qrcode';
 import crypto from 'crypto';
+import accountRoute from './routes/account.js';
 dotenv.config();
 
 const EDIT_ROUTE = 'edit';
@@ -945,18 +946,8 @@ async function getUserByEmail(email) {
     );
     return rows[0];
 }
-app.get('/account', [authorize, injectUser], async (req, res) => {
-    const user = await getUser(req.user);
-    res.render('account-info', { email: user.email, username: user.username });
-})
-app.get('/account/delete', [authorize, injectUser], async (req, res) => {
-    const user = await getUser(req.user);
-    res.render('account-delete', { email: user.email, username: user.username });
-})
-app.post('/account/delete', authorize, async (req, res) => {
-    await deleteUser(req.user);
-    res.redirect('/logout');
-})
+app.use('/account', accountRoute);
+
 app.get('/about', injectUser, (req, res) => {
     res.render('about');
 })
@@ -1041,3 +1032,4 @@ app.get('/routes/view/:route_id', injectUser, async (req, res) => {
 
 createServer(app).listen(process.env.PORT);
 
+export { authorize, injectUser, getUser, deleteUser };
