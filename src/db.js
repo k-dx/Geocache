@@ -28,7 +28,7 @@ async function createRoute (name, ownerId, waypoints=null) {
 }
 
 async function updateRoute (routeId, name, ownerId, waypoints=null) {
-    const res = await pool.query(
+    await pool.query(
         'UPDATE Routes SET name = ? WHERE id = ? AND owner_id = ?',
         [ name, routeId, ownerId ]
     );

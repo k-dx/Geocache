@@ -271,7 +271,7 @@ app.get('/visit/:uuid', authorize, async (req, res) => {
     }
     
     // mark the waypoint as visited for the user
-    const result = await pool.query(
+    await pool.query(
         'INSERT INTO Visits (user_id, waypoint_id) VALUES (?, ?)',
         [ userId, waypoint.id ]
     );
@@ -428,7 +428,7 @@ app.post('/admin/routes/edit', authorize,  async (req, res) => {
 })
 
 async function linkAccountWithGoogle({userId, googleId}) {
-    const res = await pool.query(
+    await pool.query(
         'UPDATE Users SET googleId = ? WHERE id = ?',
         [ googleId, userId ]
     );
@@ -499,7 +499,7 @@ app.get('/oauth/google', async (req, res) => {
     // teraz są dwie możliwości
     // 1. użyć access_token żeby zapytać serwera kto kryje się pod wskazaną tożsamością
     // 2. użyć id_token gdzie od razu zapisana jest wskazana tożsamość
-    var accessToken = result.token.access_token;
+    // var accessToken = result.token.access_token;
     var idToken     = result.token.id_token;
 
     // wariant 1. - żądanie do usługi profile API Google+ po profil użytkownika
@@ -529,7 +529,7 @@ app.get('/oauth/google', async (req, res) => {
             callback(null, signingKey);
         });
     } 
-    var profile = jwt.verify(idToken, getKey, async (err, profile) => {
+    var _profile = jwt.verify(idToken, getKey, async (err, profile) => {
         if (err) {
             console.error('when trying to verify jwt during google login', err);
             res.render('error-generic', {
