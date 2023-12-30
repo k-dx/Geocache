@@ -8,7 +8,7 @@ import qrcode from 'qrcode';
 import accountRoute from './routes/account.js';
 import adminRoute from './routes/admin.js';
 import { authorize, injectUser, emailExists, passwordCorrect, oauth2, authorizationUri } from './auth.js';
-import { pool, getRoute, getRoutes, getWaypoints, getWaypoint, getWaypointVisitLink, createUser, deleteUser } from './db.js';
+import { pool, getRoute, getRoutes, getWaypoints, getWaypoint, getWaypointVisitLink, createUser, deleteUser, getUser, getUserByEmail } from './db.js';
 dotenv.config();
 
 var app = express();
@@ -435,20 +435,6 @@ app.get('/logout', (req, res) => {
     res.redirect('/')
 });
 
-async function getUser(id) {
-    const [rows] = await pool.query(
-        'SELECT * FROM Users WHERE id = ?',
-        [ id ]
-    );
-    return rows[0];
-}
-async function getUserByEmail(email) {
-    const [rows] = await pool.query(
-        'SELECT * FROM Users WHERE email = ?',
-        [ email ]
-    );
-    return rows[0];
-}
 app.use('/account', accountRoute);
 
 app.get('/about', injectUser, (req, res) => {

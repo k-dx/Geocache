@@ -190,4 +190,19 @@ async function deleteUser(id) {
     return res;
 }
 
-export { pool, createRoute, updateRoute, getRoute, getRoutes, getWaypoints, getWaypoint, getWaypointVisitLink, createUser, deleteUser };
+async function getUser(id) {
+    const [rows] = await pool.query(
+        'SELECT * FROM Users WHERE id = ?',
+        [ id ]
+    );
+    return rows[0];
+}
+async function getUserByEmail(email) {
+    const [rows] = await pool.query(
+        'SELECT * FROM Users WHERE email = ?',
+        [ email ]
+    );
+    return rows[0];
+}
+
+export { pool, createRoute, updateRoute, getRoute, getRoutes, getWaypoints, getWaypoint, getWaypointVisitLink, createUser, deleteUser, getUser, getUserByEmail };
