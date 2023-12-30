@@ -436,12 +436,11 @@ app.get('/logout', (req, res) => {
     res.redirect('/')
 });
 
-app.use('/account', accountRoute);
-
 app.get('/about', injectUser, (req, res) => {
     res.render('about');
 })
 
+app.use('/account', accountRoute);
 app.use('/admin', adminRoute);
 app.use('/routes', routesRoute);
 
