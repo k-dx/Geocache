@@ -7,10 +7,6 @@
     <title>Create or edit route</title>
 </head>
 <body>
-    <%# TODO: remove this %>
-    <!-- <pre>route_id = <%= locals.route.id %></pre>
-    <pre>owner_id = <%= locals.route.owner_id %></pre>
-    <pre>mode = <%= locals.mode %></pre> -->
     <div class="h-screen grid grid-cols-2 dark:bg-gray-900">
         <div id="map">
             Map should appear here. Please contact support if it doesn't.
@@ -87,15 +83,6 @@
 
             init();
         }
-
-        // // Adds a marker to the map and push to the array.
-        // function addMarker(location) {
-        //     var marker = new google.maps.Marker({
-        //         position: location,
-        //         map: map
-        //     });
-        //     markers.push(marker);
-        // }
 
         function removeLastWaypoint () {
             const w = document.querySelectorAll('.waypoint-entry');
@@ -263,9 +250,6 @@
                 fitViewToMarkers();
             }
         }
-        // (function () { 
-        //     init();
-        // })();
     </script>
     <%- include('end-scripts') %>
 </body>
