@@ -50,35 +50,35 @@ const pool = mysql.createPool({
     database: process.env.MYSQL_DATABASE,
 }).promise();
 
-async function createRoute (name, owner_id, waypoints=null) {
+async function createRoute (name, ownerId, waypoints=null) {
     const res = await pool.query(
         'INSERT INTO Routes (name, owner_id) VALUES (?, ?)',
-        [ name, owner_id ]
+        [ name, ownerId ]
     );
-    const route_id = res[0].insertId;
+    const routeId = res[0].insertId;
     if (waypoints !== null) {
         await pool.query(
             'INSERT INTO Waypoints (route_id, latitude, longitude, order_id, name) VALUES ?',
             [ waypoints.sort((a, b) => a.id - b.id)
-                .map((w, _) => [ route_id, w.lat, w.lng, w.id, w.name ]) ]
+                .map((w, _) => [ routeId, w.lat, w.lng, w.id, w.name ]) ]
         );
     }
 }
 
-async function updateRoute (route_id, name, owner_id, waypoints=null) {
+async function updateRoute (routeId, name, ownerId, waypoints=null) {
     const res = await pool.query(
         'UPDATE Routes SET name = ? WHERE id = ? AND owner_id = ?',
-        [ name, route_id, owner_id ]
+        [ name, routeId, ownerId ]
     );
     if (waypoints !== null) {
         await pool.query(
             'DELETE FROM Waypoints WHERE route_id = ?',
-            [ route_id ]
+            [ routeId ]
         );
         await pool.query(
             'INSERT INTO Waypoints (route_id, latitude, longitude, order_id, name) VALUES ?',
             [ waypoints.sort((a, b) => a.id - b.id)
-                .map((w, _) => [ route_id, w.lat, w.lng, w.id, w.name ]) ]
+                .map((w, _) => [ routeId, w.lat, w.lng, w.id, w.name ]) ]
         );
     }
 }
@@ -104,18 +104,18 @@ async function getRoutes (userId) {
     }
 }
 
-async function getWaypoints (route_id) {
+async function getWaypoints (routeId) {
     const res = await pool.query(
         'SELECT * FROM Waypoints WHERE route_id = ?',
-        [ route_id ]
+        [ routeId ]
     );
     return res[0];
 }
 
-async function getWaypoint (waypoint_id) {
+async function getWaypoint (waypointId) {
     const res = await pool.query(
         'SELECT * FROM Waypoints WHERE id = ?',
-        [ waypoint_id ]
+        [ waypointId ]
     );
     return res[0][0];
 }
@@ -137,11 +137,11 @@ async function randomWaypointUUID () {
 }
 
 /**
- * @param {?} waypoint_id 
+ * @param {?} waypointId 
  * @returns full url that marks the waypoint as visited for the user
  */
-async function getWaypointVisitLink (waypoint_id) {
-    const waypoint = await getWaypoint(waypoint_id);
+async function getWaypointVisitLink (waypointId) {
+    const waypoint = await getWaypoint(waypointId);
 
     let uuid = waypoint.uuid;
     if (uuid === null) {
@@ -149,7 +149,7 @@ async function getWaypointVisitLink (waypoint_id) {
         uuid = await randomWaypointUUID();
         await pool.query(
             'UPDATE Waypoints SET uuid = ? WHERE id = ?',
-            [ uuid, waypoint_id ]
+            [ uuid, waypointId ]
         );
     }
     return `${process.env.DOMAIN}:${process.env.PORT}/visit/${uuid}`;
@@ -176,9 +176,9 @@ app.get('/admin/routes/create', [authorize, injectUser], async (req, res) => {
 })
 app.get('/admin/routes/summary/:route_id', [authorize, injectUser], async (req, res) => {
     // TODO check if user is the owner of the route
-    const route_id = req.params.route_id;
-    const route = await getRoute(route_id);
-    const waypoints = await getWaypoints(route_id);
+    const routeId = req.params.route_id;
+    const route = await getRoute(routeId);
+    const waypoints = await getWaypoints(routeId);
     if (!route) {
         res.render('error-generic', {
             message: 'No route with this id!'
@@ -192,8 +192,8 @@ app.get('/admin/routes/summary/:route_id', [authorize, injectUser], async (req, 
 })
 app.get('/admin/routes/delete/:route_id', [authorize, injectUser], async (req, res) => {
     // check if user is the owner of the route
-    const route_id = req.params.route_id;
-    const route = await getRoute(route_id);
+    const routeId = req.params.route_id;
+    const route = await getRoute(routeId);
     if (!route) {
         res.render('error-generic', {
             message: 'No route with this id!'
@@ -205,9 +205,9 @@ app.get('/admin/routes/delete/:route_id', [authorize, injectUser], async (req, r
     });
 })
 app.post('/admin/routes/delete/:route_id', [authorize, injectUser], async (req, res) => {
-    const route_id = req.params.route_id;
+    const routeId = req.params.route_id;
 
-    const route = await getRoute(route_id);
+    const route = await getRoute(routeId);
     if (!route) {
         res.render('error-generic', {
             message: 'No route with this id!'
@@ -218,12 +218,12 @@ app.post('/admin/routes/delete/:route_id', [authorize, injectUser], async (req, 
     // TODO check if user is the owner of the route
     await pool.query(
         'DELETE FROM Waypoints WHERE route_id = ?',
-        [ route_id ]
+        [ routeId ]
     );
 
     await pool.query(
         'DELETE FROM Routes WHERE id = ?',
-        [ route_id ]
+        [ routeId ]
     );
 
     res.redirect('/admin/routes/list');
@@ -245,19 +245,19 @@ const generateQR = async text => {
 
 // TODO: merge those two into one?
 app.get('/downloads/waypoint-qr/:waypoint_id', [authorize, injectUser], async (req, res) => {
-    const waypoint_id = req.params.waypoint_id;
-    const [waypoint_entry] = await pool.query(
+    const waypointId = req.params.waypoint_id;
+    const [waypointEntry] = await pool.query(
         'SELECT * FROM Waypoints WHERE id = ?',
-        [ waypoint_id ]
+        [ waypointId ]
     );
-    if (waypoint_entry.length === 0) {
+    if (waypointEntry.length === 0) {
         res.render('error-generic', {
             message: 'No waypoint with this id.'
         });
         return;
     }
 
-    const waypointVisitLink = await getWaypointVisitLink(waypoint_id);
+    const waypointVisitLink = await getWaypointVisitLink(waypointId);
     const qr = await generateQR(waypointVisitLink);
     
     if (qr === null) {
@@ -267,27 +267,27 @@ app.get('/downloads/waypoint-qr/:waypoint_id', [authorize, injectUser], async (r
         return;
     }
 
-    const waypoint = await getWaypoint(waypoint_id);
+    const waypoint = await getWaypoint(waypointId);
     const route = await getRoute(waypoint.route_id);
     // TODO check if user is the owner of the route
 
     res.render('waypoints-qrs', {
-        qr_imgs: [qr],
+        qrImgs: [qr],
         waypoints: [waypoint],
         waypointsVisitLinks: [waypointVisitLink],
         route: route
     })
 })
 app.get('/downloads/waypoints-qrs/:route_id', [authorize, injectUser], async (req, res) => {
-    const route_id = req.params.route_id;
-    const route = await getRoute(route_id);
+    const routeId = req.params.route_id;
+    const route = await getRoute(routeId);
     if (!route) {
         res.render('error-generic', {
             message: 'No route with this id!'
         });
         return;
     }
-    const waypoints = await getWaypoints(route_id);
+    const waypoints = await getWaypoints(routeId);
     // TODO check if user is the owner of the route
     let qrImgs = [];
     let waypointsVisitLinks = [];
@@ -303,7 +303,7 @@ app.get('/downloads/waypoints-qrs/:route_id', [authorize, injectUser], async (re
         qrImgs.push(qr);
     }
     res.render('waypoints-qrs', {
-        qr_imgs: qrImgs,
+        qrImgs: qrImgs,
         waypoints: waypoints,
         waypointsVisitLinks: waypointsVisitLinks,
         route: route
@@ -324,22 +324,22 @@ app.get('/visit/:uuid', authorize, async (req, res) => {
     const userId = req.signedCookies.user;
 
     // check if user has joined the route that the waypoint belongs to
-    const [joined_rows] = await pool.query(
+    const [joinedRows] = await pool.query(
         'SELECT * FROM JoinedRoutes WHERE user_id = ? AND route_id = ?',
         [ userId, waypoint.route_id ]
     )
-    if (joined_rows.length === 0) {
+    if (joinedRows.length === 0) {
         const route = await getRoute(waypoint.route_id);
         res.render('error-route-not-joined', { route: route });
         return;
     }
 
     // check if user has alread visited the waypoint
-    const [visits_rows] = await pool.query(
+    const [visitsRows] = await pool.query(
         'SELECT * FROM Visits WHERE user_id = ? AND waypoint_id = ?',
         [ userId, waypoint.id ]
     )
-    if (visits_rows.length !== 0) {
+    if (visitsRows.length !== 0) {
         res.render('error-generic', {
             message: 'You have already visited this waypoint!'
         });
@@ -387,15 +387,15 @@ app.post('/admin/routes/create', authorize, async (req, res) => {
     res.redirect('/admin/routes/list');
 })
 app.get('/admin/routes/edit/:route_id', [authorize, injectUser], async (req, res) => {
-    const route_id = req.params.route_id;
-    const route = await getRoute(route_id);
+    const routeId = req.params.route_id;
+    const route = await getRoute(routeId);
     if (!route) {
         res.render('error-generic', {
             message: 'No route with this id!'
         });
         return;
     }
-    const waypoints = await getWaypoints(route_id);
+    const waypoints = await getWaypoints(routeId);
     res.render('routes-edit', { 
         mode: EDIT_ROUTE, 
         route: route,
@@ -403,7 +403,7 @@ app.get('/admin/routes/edit/:route_id', [authorize, injectUser], async (req, res
     });
 })
 app.post('/admin/routes/edit', authorize,  async (req, res) => {
-    const route_id = req.body.route_id;
+    const routeId = req.body.route_id;
     const name = req.body.name;
     const userId = req.user;
     const waypoints = getWaypointsFromRequest(req);
@@ -415,7 +415,7 @@ app.post('/admin/routes/edit', authorize,  async (req, res) => {
     // TOOD: check if the route exists
     // TODO: check if waypoints are correct (lat, lng, ids)
 
-    await updateRoute(route_id, name, userId, waypoints);
+    await updateRoute(routeId, name, userId, waypoints);
     res.redirect('/admin/routes/list');
 })
 
@@ -535,8 +535,8 @@ app.get('/oauth/google', async (req, res) => {
     // teraz są dwie możliwości
     // 1. użyć access_token żeby zapytać serwera kto kryje się pod wskazaną tożsamością
     // 2. użyć id_token gdzie od razu zapisana jest wskazana tożsamość
-    var access_token = result.token.access_token;
-    var id_token     = result.token.id_token;
+    var accessToken = result.token.access_token;
+    var idToken     = result.token.id_token;
 
     // wariant 1. - żądanie do usługi profile API Google+ po profil użytkownika
     /*
@@ -565,7 +565,7 @@ app.get('/oauth/google', async (req, res) => {
             callback(null, signingKey);
         });
     } 
-    var profile = jwt.verify(id_token, getKey, async (err, profile) => {
+    var profile = jwt.verify(idToken, getKey, async (err, profile) => {
         // TODO handle err
         // console.log(profile);
         if (!profile.email) {
@@ -805,12 +805,12 @@ app.get('/routes/browse', injectUser, async (req, res) => {
 })
 app.get('/routes/join/:route_id', [authorize, injectUser], async (req, res) => {
     const userId = req.user;
-    const route_id = req.params.route_id;
+    const routeId = req.params.route_id;
     // update the JoinedRoutes table
     try {
         await pool.query(
             'INSERT INTO JoinedRoutes (user_id, route_id) VALUES (?, ?)',
-            [ userId, route_id ]
+            [ userId, routeId ]
         );
     } catch (err) {
         if (err.code === 'ER_DUP_ENTRY') {
@@ -819,19 +819,19 @@ app.get('/routes/join/:route_id', [authorize, injectUser], async (req, res) => {
             });
             return;
         } else {
-            console.error(`routes/join/${route_id}`, err);
+            console.error(`routes/join/${routeId}`, err);
             res.render('error-generic', {
                 message: 'An error occured. Please try again.'
             });
             return;
         }
     }
-    const route = await getRoute(route_id);
+    const route = await getRoute(routeId);
     res.render('success-route-joined', { route: route });
 })
 app.get('/routes/view/:route_id', injectUser, async (req, res) => {
-    const route_id = req.params.route_id;
-    const route = await getRoute(route_id);
+    const routeId = req.params.route_id;
+    const route = await getRoute(routeId);
     if (!route) {
         res.render('error-generic', {
             message: 'No route with this id!'
@@ -843,11 +843,11 @@ app.get('/routes/view/:route_id', injectUser, async (req, res) => {
     if (userId) {
         const joinedQuery = await pool.query(
             'SELECT * FROM JoinedRoutes WHERE route_id = ? AND user_id = ?',
-            [ route_id, userId ]
+            [ routeId, userId ]
         );
         joined = joinedQuery[0].length === 1;
     }
-    const waypoints = await getWaypoints(route_id);
+    const waypoints = await getWaypoints(routeId);
     res.render('route-view', {
         route: route,
         waypoints: waypoints,
