@@ -1,6 +1,6 @@
 import { AuthorizationCode } from 'simple-oauth2';
 import bcrypt from 'bcrypt';
-import { pool } from './index.js';
+import { pool } from './db.js';
 import dotenv from 'dotenv';
 dotenv.config();
 
