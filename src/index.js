@@ -24,9 +24,6 @@ app.use(cookieParser(process.env.COOKIE_SECRET));
 app.get('/', injectUser, (req, res) => {
     res.render('index');
 })
-app.get('/dev', injectUser, (req, res) => {
-    res.render('dev');
-})
 
 /**
  * Taken from https://www.npmjs.com/package/qrcode
