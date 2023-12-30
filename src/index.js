@@ -962,6 +962,17 @@ app.get('/routes/view/:route_id', injectUser, async (req, res) => {
         joined = joinedQuery[0].length === 1;
     }
     const waypoints = await getWaypoints(routeId);
+    const userVisitsQuery = await pool.query(
+        'SELECT * FROM Visits WHERE user_id = ?',
+        [ userId ]
+    );
+    const userVisits = userVisitsQuery[0];
+    for (const waypoint of waypoints) {
+        if (userVisits.some(v => v.waypoint_id === waypoint.id)) {
+            waypoint.visited = true;
+        }
+    }
+
     res.render('route-view', {
         route: route,
         waypoints: waypoints,

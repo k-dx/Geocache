@@ -39,6 +39,9 @@
                         <th scope="col" class="px-6 py-3">
                             Longitude
                         </th>
+                        <th scope="col" class="px-6 py-3">
+                            Visited?
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
@@ -55,6 +58,9 @@
                         </td>
                         <td class="px-6 py-4">
                             <%= waypoint.longitude %> 
+                        </td>
+                        <td class="px-6 py-4">
+                            <%= waypoint.visited ? 'Yes' : 'No' %>
                         </td>
                     </tr>
                     <% }) %>
