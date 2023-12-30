@@ -573,10 +573,10 @@ async function linkAccountWithGoogle({userId, googleId}) {
     );
 }
 
-async function deleteUser(email) {
+async function deleteUser(id) {
     const res = await pool.query(
-        'DELETE FROM Users WHERE email = ?',
-        [ email ]
+        'DELETE FROM Users WHERE id = ?',
+        [ id ]
     );
     return res;
 }
