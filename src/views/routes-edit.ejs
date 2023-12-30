@@ -7,6 +7,7 @@
     <title>Create or edit route</title>
 </head>
 <body>
+    <%# TODO: remove this %>
     <!-- <pre>route_id = <%= locals.route.id %></pre>
     <pre>owner_id = <%= locals.route.owner_id %></pre>
     <pre>mode = <%= locals.mode %></pre> -->
@@ -16,12 +17,23 @@
             <%# Loaded by script %>
         </div>
         <div class="p-4 overflow-auto">
+            <% if (locals.message) { %>
+                <div class="flex items-center p-4 mb-4 text-sm text-red-800 border border-red-300 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400 dark:border-red-800" role="alert">
+                    <svg class="flex-shrink-0 inline w-4 h-4 me-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
+                    </svg>
+                    <span class="sr-only">Info</span>
+                    <div>
+                        <%= locals.message %>
+                    </div>
+                  </div>
+            <% } %>
             <form action="/admin/routes/<%= locals.mode %>" method="post">
                 <% if (locals.mode === 'edit') { %>
                     <input type="hidden" name="route_id" value="<%= locals.route.id %>">
                 <% } %>
 
-                <label for="name" class="block mb-2 font-medium text-gray-900 dark:text-white ">Route name</label>
+                <label for="name" class="block mb-2 font-medium text-gray-900 dark:text-white">Route name</label>
                 <input type="text" id="name" name="name" placeholder="My great route" required class="mb-4 bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
                 <div class="waypoints mb-4">
                     <%# Filled by client-side javascript %>
@@ -131,7 +143,7 @@
            `<p class="block mb-2 font-medium text-gray-900 dark:text-white">Waypoint ${id}</p>
             <div class="flex flex-wrap justify-stretch gap-2 mb-2">
                 <input hidden type="number" name="${idInputId}" value="${id}">
-                <input id="${nameInputId}" type="text" name="${nameInputId}" placeholder="waypoint name" class="grow bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                <input id="${nameInputId}" type="text" name="${nameInputId}" placeholder="waypoint name"  class="grow bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
 
                 <input id="${latInputId}" type="text" name="${latInputId}" readonly class="w-36 bg-gray-100 border border-gray-300 text-gray-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500">
 
