@@ -51,7 +51,6 @@
     function init () {        
         const waypoints = <%- JSON.stringify(locals.waypoints) %>;
         waypoints.forEach(waypoint => {
-            console.log(waypoint.lat);
             addWaypoint({
                 id_: waypoint.order_id,
                 lat: waypoint.latitude,

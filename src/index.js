@@ -198,9 +198,6 @@ app.post('/login', async (req, res) => {
     const email = req.body.email;
     const password = req.body.password;
     const redirectUrl = req.query.returnUrl || '/';
-    console.log(req.body);
-    console.log(req.query);
-    console.log(req.query.returnUrl);
 
     const emailExistsRes = await emailExists(email);
     if (!emailExistsRes) {
@@ -241,7 +238,6 @@ app.get('/oauth/google', async (req, res) => {
 
     // żądanie do punktu końcowego oauth2 zamieniające code na access_token i id_token
     var result       = await oauth2.getToken(options)
-    // console.log(result);
 
     // teraz są dwie możliwości
     // 1. użyć access_token żeby zapytać serwera kto kryje się pod wskazaną tożsamością
@@ -301,7 +297,6 @@ app.get('/oauth/google', async (req, res) => {
             });
             user = await getUser(userId);
         }
-        console.log(user);
         if (user.googleId === null) {
             await linkAccountWithGoogle({
                 userId: user.id,

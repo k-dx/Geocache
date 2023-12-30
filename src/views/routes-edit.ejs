@@ -164,14 +164,12 @@
             const editButton = document.querySelector(`#${editButtonId}`);
             const saveButton = document.querySelector(`#${saveButtonId}`);
             editButton.addEventListener('click', function () {
-                console.log(`edit button ${orderId} clicked`);
                 currentEditListener = map.addListener('click', clickListener.bind({id: orderId}));
 
                 editButton.classList.add('hidden');
                 saveButton.classList.remove('hidden');
             });
             saveButton.addEventListener('click', function () {
-                console.log(`save button ${orderId} clicked`);
                 google.maps.event.removeListener(currentEditListener);
 
                 editButton.classList.remove('hidden');
@@ -189,7 +187,6 @@
                 addWaypoint();
             } else {
                 waypoints.forEach(waypoint => {
-                    console.log(waypoint.lat);
                     addWaypoint({
                         id: waypoint.id,
                         orderId_: waypoint.order_id,
@@ -234,7 +231,6 @@
             const toast = document.querySelector('#toast-edit-info');
             const editToastDismissed = 'edit-info-dismissed';
             if (getCookie(editToastDismissed) !== 'true') {
-                console.log('cookie is not there');
                 document.cookie = "name=value; expires=Fri, 31 Dec 9999 23:59:59 GMT; path=/";
                 toast.classList.remove('hidden');  
             }

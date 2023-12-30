@@ -50,7 +50,6 @@ function validateRoute (route, waypoints) {
 function getWaypointsFromRequest (req) {
     let waypoints = [];
     for (let i = 0; i < 500; i++) {
-        // console.log(i);
         const waypoint = {
             id: req.body[`w${i}-id`],
             orderId: req.body[`w${i}-order-id`],
@@ -222,8 +221,6 @@ router.post('/routes/edit', authorize,  async (req, res) => {
     const route = await getRoute(routeId); 
     // check if the route exists
     if (!route) {
-        console.log(`routeId=${routeId}`);
-        console.log(`route=${route}`);
         res.render('error-generic', {
             message: 'No route with this id!'
         });
