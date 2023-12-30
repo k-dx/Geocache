@@ -7,7 +7,8 @@
     <title>Success</title>
 </head>
 <body class="dark:bg-gray-800">
-    <%- include('navbar') %>
+    <%- include('navbar', { currentPage: null }) %>
+    
     <div class="max-w-md mx-auto mt-16 flex flex-col justify-center items-center">
         <h2 class="text-4xl font-bold dark:text-white mb-4">Registration successful!</h2>
         <a href="/login" class="block-inline text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Login</a>

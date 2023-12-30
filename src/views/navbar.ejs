@@ -12,22 +12,28 @@
       </button>
       <div class="hidden w-full md:block md:w-auto" id="navbar-default">
         <ul class="font-medium flex flex-col p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
-            <li class="dark:text-white"><%= locals.user ? locals.user : 'Niezalogowany' %></li>
-          <li>
-            <a href="http://localhost:3000" class="block py-2 px-3 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 dark:text-white md:dark:text-blue-500" aria-current="page">Home</a>
+          <% 
+          const classesCurrentPage = "block py-2 px-3 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 dark:text-white md:dark:text-blue-500";
+          const classesOtherPage = "block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent";
+          %>
+          <li class="dark:text-white">
+            <%= locals.user ? locals.user : 'Niezalogowany' %>
           </li>
           <li>
-            <a href="/about" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent">About</a>
+            <a href="http://localhost:3000" class="<%= currentPage === 'home' ? classesCurrentPage : classesOtherPage %>" <% if (currentPage === 'home') { %>aria-current="page"<% } %>>Home</a>
           </li>
           <li>
-            <a href="/routes/browse" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent">Browse</a>
+            <a href="/about" class="<%= currentPage === 'about' ? classesCurrentPage : classesOtherPage %>" <% if (currentPage === 'about') { %>aria-current="page"<% } %>">About</a>
           </li>
           <li>
-            <a href="/admin/routes/list" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent">Admin</a>
+            <a href="/routes/browse" class="<%= currentPage === 'browse' ? classesCurrentPage : classesOtherPage %>" <% if (currentPage === 'browse') { %>aria-current="page"<% } %>">Browse</a>
+          </li>
+          <li>
+            <a href="/admin/routes/list" class="<%= currentPage === 'admin' ? classesCurrentPage : classesOtherPage %>" <% if (currentPage === 'admin') { %>aria-current="page"<% } %>">Admin</a>
           </li>
           <% if (locals.user) { %>
           <li>
-            <a href="/account" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent">Account</a>
+            <a href="/account" class="<%= currentPage === 'account' ? classesCurrentPage : classesOtherPage %>" <% if (currentPage === 'account') { %>aria-current="page"<% } %>">Account</a>
           </li>
         <% } %>
           <li>
@@ -39,7 +45,7 @@
                 text = 'Logout';
             } 
         %>  
-            <a href="<%= href %>" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"><%= text %></a>
+            <a href="<%= href %>" class="<%= currentPage === text.toLowerCase() ? classesCurrentPage : classesOtherPage %>" <% if (currentPage === text.toLowerCase()) { %>aria-current="page"<% } %>"><%= text %></a>
           </li>
         </ul>
       </div>
