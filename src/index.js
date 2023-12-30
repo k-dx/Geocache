@@ -736,8 +736,13 @@ app.get('/oauth/google', async (req, res) => {
         });
     } 
     var profile = jwt.verify(idToken, getKey, async (err, profile) => {
-        // TODO handle err
-        // console.log(profile);
+        if (err) {
+            console.error('when trying to verify jwt during google login', err);
+            res.render('error-generic', {
+                message: 'An error occured. Please try again.'
+            });
+            return;
+        }
         if (!profile.email) {
             res.render('error-generic', {
                 message: 'No email in Google account'
