@@ -75,12 +75,12 @@
 
         function initMap() {
             var initialLocation = {
-                lat: -34.397,
-                lng: 150.644
+                lat: 0,
+                lng: 0
             };
 
             map = new google.maps.Map(document.getElementById('map'), {
-                zoom: 8,
+                zoom: 1,
                 center: initialLocation,
                 clickableIcons: true // Enable click events on POIs
             });
@@ -214,6 +214,14 @@
             }
         }
 
+        function fitViewToMarkers () {
+            const bounds = new google.maps.LatLngBounds();
+            markers.forEach(marker => {
+                bounds.extend(marker.getPosition());
+            });
+            map.fitBounds(bounds);
+        }
+
         // https://stackoverflow.com/questions/4825683/how-do-i-create-and-read-a-value-from-cookie-with-javascript
         const setCookie = (name, value, days = 7, path = '/') => {
             const expires = new Date(Date.now() + days * 864e5).toUTCString()
@@ -250,6 +258,10 @@
             });
             
             prefillForm();
+            
+            if (!(markers[0].getPosition().lat() === 0 && markers[0].getPosition().lng() === 0)) {
+                fitViewToMarkers();
+            }
         }
         // (function () { 
         //     init();
