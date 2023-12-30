@@ -203,23 +203,36 @@ app.get('/admin/routes/create', [authorize, injectUser], async (req, res) => {
     });
 })
 app.get('/admin/routes/summary/:route_id', [authorize, injectUser], async (req, res) => {
-    // TODO check if user is the owner of the route
     const routeId = req.params.route_id;
     const route = await getRoute(routeId);
-    const waypoints = await getWaypoints(routeId);
+
     if (!route) {
         res.render('error-generic', {
             message: 'No route with this id!'
         });
         return;
     }
+
+    const userId = req.signedCookies.user;
+    const ownerId = route.owner_id;
+
+    // check if user is the owner of the route
+    // this comparison is ugly
+    if (ownerId.toString() !== userId.toString()) {
+        res.render('error-generic', {
+            message: 'You are not the owner of this route!'
+        });
+        return;
+    }
+
+    const waypoints = await getWaypoints(routeId);
+    
     res.render('route-summary', {
         route: route,
         waypoints: waypoints
     })
 })
 app.get('/admin/routes/delete/:route_id', [authorize, injectUser], async (req, res) => {
-    // check if user is the owner of the route
     const routeId = req.params.route_id;
     const route = await getRoute(routeId);
     if (!route) {
@@ -228,6 +241,18 @@ app.get('/admin/routes/delete/:route_id', [authorize, injectUser], async (req, r
         });
         return;
     }
+
+    // check if user is the owner of the route
+    // this comparison is ugly
+    const userId = req.signedCookies.user;
+    const ownerId = route.owner_id;
+    if (ownerId.toString() !== userId.toString()) {
+        res.render('error-generic', {
+            message: 'You are not the owner of this route!'
+        });
+        return;
+    }
+
     res.render('route-delete', {
         route: route
     });
@@ -243,7 +268,17 @@ app.post('/admin/routes/delete/:route_id', [authorize, injectUser], async (req, 
         return;
     }
 
-    // TODO check if user is the owner of the route
+    // check if user is the owner of the route
+    // this comparison is ugly
+    const userId = req.signedCookies.user;
+    const ownerId = route.owner_id;
+    if (ownerId.toString() !== userId.toString()) {
+        res.render('error-generic', {
+            message: 'You are not the owner of this route!'
+        });
+        return;
+    }
+
     await pool.query(
         'DELETE FROM Waypoints WHERE route_id = ?',
         [ routeId ]
@@ -297,7 +332,17 @@ app.get('/downloads/waypoint-qr/:waypoint_id', [authorize, injectUser], async (r
 
     const waypoint = await getWaypoint(waypointId);
     const route = await getRoute(waypoint.route_id);
-    // TODO check if user is the owner of the route
+
+    // check if user is the owner of the route
+    // this comparison is ugly
+    const userId = req.signedCookies.user;
+    const ownerId = route.owner_id;
+    if (ownerId.toString() !== userId.toString()) {
+        res.render('error-generic', {
+            message: 'You are not the owner of this route!'
+        });
+        return;
+    }
 
     res.render('waypoints-qrs', {
         qrImgs: [qr],
@@ -316,7 +361,19 @@ app.get('/downloads/waypoints-qrs/:route_id', [authorize, injectUser], async (re
         return;
     }
     const waypoints = await getWaypoints(routeId);
-    // TODO check if user is the owner of the route
+
+    // check if user is the owner of the route
+    // this comparison is ugly
+    const userId = req.signedCookies.user;
+    const ownerId = route.owner_id;
+    if (ownerId.toString() !== userId.toString()) {
+        res.render('error-generic', {
+            message: 'You are not the owner of this route!'
+        });
+        return;
+    }
+
+
     let qrImgs = [];
     let waypointsVisitLinks = [];
     for (const waypoint of waypoints) {
@@ -473,8 +530,9 @@ app.get('/admin/routes/edit/:route_id', [authorize, injectUser], async (req, res
     }
     const userId = req.signedCookies.user;
     const ownerId = route.owner_id;
-    // TODO: is this comparison with .toString() correct?
-    if (ownerId.toString() !== userId) {
+    // check if user is the owner of the route
+    // this comparison is ugly
+    if (ownerId.toString() !== userId.toString()) {
         res.render('error-generic', {
             message: 'You are not the owner of this route!'
         });
