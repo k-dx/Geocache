@@ -826,8 +826,8 @@ app.get('/routes/join/:route_id', [authorize, injectUser], async (req, res) => {
             return;
         }
     }
-    // TODO nicer join message
-    res.end('joined');
+    const route = await getRoute(route_id);
+    res.render('success-route-joined', { route: route });
 })
 app.get('/routes/view/:route_id', injectUser, async (req, res) => {
     const route_id = req.params.route_id;
