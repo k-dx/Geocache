@@ -152,7 +152,7 @@ async function getWaypointVisitLink (waypoint_id) {
             [ uuid, waypoint_id ]
         );
     }
-    return `http://localhost:3000/visit/${uuid}`;
+    return `${process.env.DOMAIN}:${process.env.PORT}/visit/${uuid}`;
 }
 
 app.get('/', injectUser, (req, res) => {
@@ -855,5 +855,5 @@ app.get('/routes/view/:route_id', injectUser, async (req, res) => {
     })
 })
 
-createServer(app).listen(3000);
+createServer(app).listen(process.env.PORT);
 
