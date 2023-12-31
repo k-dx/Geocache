@@ -2,6 +2,7 @@ import mysql from 'mysql2';
 import crypto from 'crypto';
 import bcrypt from 'bcrypt';
 import { connectWithConnector as createConnectorPool } from './connect-connector.js';
+import { BASE_URL } from './constants.js';
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -222,7 +223,7 @@ async function getWaypointVisitLink(waypointId) {
             [uuid, waypointId]
         );
     }
-    return `${process.env.DOMAIN}:${process.env.PORT}/visit/${uuid}`;
+    return `${BASE_URL}/visit/${uuid}`;
 }
 
 async function hashPassword(password) {
