@@ -1,0 +1,8 @@
+.git
+*Dockerfile*
+*docker-compose*
+node_modules
+docs
+.vscode
+.eslint.json
+src/public/styles/output.css

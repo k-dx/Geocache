@@ -11,3 +11,7 @@
 * Google Maps API
 * OAuth2 (Google Accounts)
 * TailwindCSS with Flowbite component library
+
+### Deployment
+
+see [deploy.md](./deploy.md)
