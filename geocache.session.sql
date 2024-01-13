@@ -143,3 +143,9 @@ SELECT Routes.id AS route_id, Routes.name, JoinedRoutes.user_id
     FROM Routes
     LEFT JOIN JoinedRoutes ON Routes.id = JoinedRoutes.route_id
     WHERE (JoinedRoutes.user_id = 1 OR JoinedRoutes.user_id IS NULL)
+
+-- @block
+SELECT Users.id as user_id, Users.*, JoinedRoutes.*, Visits.* FROM
+    Users JOIN JoinedRoutes ON Users.id = JoinedRoutes.user_id
+    LEFT JOIN Visits on Users.id = Visits.user_id
+    WHERE JoinedRoutes.route_id = 6

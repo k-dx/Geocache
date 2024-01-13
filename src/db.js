@@ -175,6 +175,32 @@ async function getRoutes(userId) {
     }
 }
 
+/**
+ * Gives a list of players (i.e. users that joined) for a given route
+ * with an array of waypoints that they visited
+ * @param {number} routeId 
+ */
+async function getPlayers(routeId) {
+    const resQuery = await pool.query(
+        'SELECT Users.id as user_id_, Users.*, JoinedRoutes.*, Visits.* FROM Users JOIN JoinedRoutes ON Users.id = JoinedRoutes.user_id LEFT JOIN Visits on Users.id = Visits.user_id WHERE JoinedRoutes.route_id = ?',
+        [routeId]
+    );
+    const res = resQuery[0];
+
+    let result = {};
+    for (const row of res) {
+        if (!result[row.user_id]) {
+            result[row.user_id] = {
+                user_id: row.user_id_,
+                username: row.username,
+                visitedWaypoints: []
+            };
+        }
+        result[row.user_id].visitedWaypoints.push(row.waypoint_id);
+    }
+    return Object.values(result);
+}
+
 async function getWaypoints(routeId) {
     const res = await pool.query(
         'SELECT * FROM Waypoints WHERE route_id = ?',
@@ -286,4 +312,4 @@ async function getUserByEmail(email) {
     return rows[0];
 }
 
-export { pool, createRoute, updateRoute, getRoute, getRoutes, getWaypoints, getWaypoint, getWaypointVisitLink, createUser, deleteUser, getUser, getUserByEmail };
+export { pool, createRoute, updateRoute, getRoute, getRoutes, getPlayers, getWaypoints, getWaypoint, getWaypointVisitLink, createUser, deleteUser, getUser, getUserByEmail };

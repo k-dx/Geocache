@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { authorize, injectUser } from '../auth.js';
-import { pool, createRoute, updateRoute, getRoute, getRoutes, getWaypoints } from '../db.js';
+import { pool, createRoute, updateRoute, getRoute, getRoutes, getWaypoints,
+         getPlayers } from '../db.js';
 import { EDIT_ROUTE, CREATE_ROUTE } from '../constants.js';
 
 const router = Router();
@@ -77,6 +78,7 @@ router.get('/routes/create', [authorize, injectUser], async (req, res) => {
     });
 })
 router.get('/routes/summary/:route_id', [authorize, injectUser], async (req, res) => {
+    console.log('yah babhy');
     const routeId = req.params.route_id;
     const route = await getRoute(routeId);
 
@@ -100,10 +102,12 @@ router.get('/routes/summary/:route_id', [authorize, injectUser], async (req, res
     }
 
     const waypoints = await getWaypoints(routeId);
+    const players = await getPlayers(routeId);
     
     res.render('route-summary', {
         route: route,
-        waypoints: waypoints
+        waypoints: waypoints,
+        players: players
     })
 })
 router.get('/routes/delete/:route_id', [authorize, injectUser], async (req, res) => {
