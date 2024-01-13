@@ -67,7 +67,7 @@ function getWaypointsFromRequest (req) {
 router.get('/routes/list', [authorize, injectUser], async (req, res) => {
     const userId = req.user;
     res.render('admin-list', { 
-        routes: await getRoutes(userId)
+        routes: await getRoutes({userId: userId})
     });
 })
 router.get('/routes/create', [authorize, injectUser], async (req, res) => {

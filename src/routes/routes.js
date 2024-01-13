@@ -6,7 +6,8 @@ const router = Router();
 
 router.get('/browse', injectUser, async (req, res) => {
     const userId = req.signedCookies.user;
-    const routes = await getRoutes();
+    const search = req.query.search ? req.query.search : '';
+    const routes = await getRoutes({nameLike: search});
     const joinedRoutesQuery = await pool.query(
         'SELECT * FROM JoinedRoutes WHERE user_id = ?',
         [ userId ]

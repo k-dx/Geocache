@@ -162,15 +162,18 @@ async function getRoute(id) {
     return rows[0];
 }
 
-async function getRoutes(userId) {
+async function getRoutes({userId = null, nameLike = ''}) {
     if (userId) {
         const [rows] = await pool.query(
-            'SELECT * FROM Routes WHERE owner_id = ?',
-            [userId]
+            'SELECT * FROM Routes WHERE owner_id = ? AND name LIKE ?',
+            [userId, `%${nameLike}%`]
         );
         return rows;
     } else {
-        const [rows] = await pool.query('SELECT * FROM Routes');
+        const [rows] = await pool.query(
+            'SELECT * FROM Routes WHERE name LIKE ?',
+            [`%${nameLike}%`]
+        );
         return rows;
     }
 }

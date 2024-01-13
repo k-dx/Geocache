@@ -149,3 +149,6 @@ SELECT Users.id as user_id, Users.*, JoinedRoutes.*, Visits.* FROM
     Users JOIN JoinedRoutes ON Users.id = JoinedRoutes.user_id
     LEFT JOIN Visits on Users.id = Visits.user_id
     WHERE JoinedRoutes.route_id = 6
+
+-- @block
+SELECT * FROM Routes WHERE owner_id = 6 AND name LIKE '%%'
