@@ -74,7 +74,8 @@ router.get('/routes/create', [authorize, injectUser], async (req, res) => {
     res.render('routes-edit', { 
         mode: CREATE_ROUTE,
         route: {},
-        waypoints: [] 
+        waypoints: [],
+        googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY
     });
 })
 router.get('/routes/summary/:route_id', [authorize, injectUser], async (req, res) => {
@@ -107,7 +108,8 @@ router.get('/routes/summary/:route_id', [authorize, injectUser], async (req, res
     res.render('route-summary', {
         route: route,
         waypoints: waypoints,
-        players: players
+        players: players,
+        googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY
     })
 })
 router.get('/routes/delete/:route_id', [authorize, injectUser], async (req, res) => {
@@ -181,7 +183,8 @@ router.post('/routes/create', authorize, async (req, res) => {
             message: validation.message,
             mode: CREATE_ROUTE,
             route: validation.route,
-            waypoints: validation.waypoints
+            waypoints: validation.waypoints,
+            googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY
         });
         return;
     }
@@ -213,7 +216,8 @@ router.get('/routes/edit/:route_id', [authorize, injectUser], async (req, res) =
     res.render('routes-edit', { 
         mode: EDIT_ROUTE, 
         route: route,
-        waypoints: waypoints
+        waypoints: waypoints,
+        googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY
     });
 })
 router.post('/routes/edit', authorize,  async (req, res) => {
@@ -247,7 +251,8 @@ router.post('/routes/edit', authorize,  async (req, res) => {
             message: validation.message,
             mode: EDIT_ROUTE,
             route: validation.route,
-            waypoints: validation.waypoints
+            waypoints: validation.waypoints,
+            googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY
         });
         return;
     }

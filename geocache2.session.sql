@@ -6,7 +6,7 @@ CREATE TABLE Users(
     password VARCHAR(255),
     googleId VARCHAR(255),
     CHECK (password IS NOT NULL OR googleId IS NOT NULL)
-)
+);
 
 -- @block
 CREATE TABLE Routes(
@@ -16,7 +16,7 @@ CREATE TABLE Routes(
     FOREIGN KEY (owner_id) 
         REFERENCES Users(id)
         ON DELETE CASCADE
-)
+);
 
 -- @block
 CREATE TABLE Waypoints(

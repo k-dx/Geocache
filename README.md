@@ -6,7 +6,7 @@ Geocache is a real-life game about exploring places. Anyone can create a route c
 1. `npm install`
 2. Create tables from `geocache2.session.sql` in MySQL db.
 3. Fill `.env.template` and put into `.env`
-4. `npm start` for production or `npm run dev` for dev buil
+4. `npm start` for production or `npm run dev` for dev build
 
 ### Technologies used:
 * NodeJS + ExpressJS with EJS template engine

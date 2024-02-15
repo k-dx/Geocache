@@ -81,6 +81,7 @@ router.get('/view/:route_id', injectUser, async (req, res) => {
         route: route,
         waypoints: waypoints,
         joined: joined,
+        googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY
     })
 })
 
