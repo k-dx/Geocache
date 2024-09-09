@@ -1,5 +1,5 @@
 # https://hub.docker.com/_/node
-FROM node:18
+FROM node:18-alpine3.18
 
 # Create and change to the app directory.
 WORKDIR /usr/src/app

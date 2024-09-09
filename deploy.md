@@ -61,3 +61,21 @@ COOKIE_SECRET="$COOKIE_SECRET" \
 --project="$GOOGLE_CLOUD_PROJECT" \
  && gcloud run services update-traffic "$APP_NAME" --to-latest
 ```
+
+---
+
+### Deployment to mikr.us 
+
+1. build the docker image
+   ```bash
+   user@local:$ docker build -t geocache .
+   ```
+2. send it to the server
+   ```bash
+   user@local:$ docker save geocache | bzip2 | ssh frog@frog01.mikr.us -p PORT docker load
+   ```
+3. run it on the server
+   ```
+   user@server:$ docker run --env-file ENV_FILE -dp IP_ADDRESS:OUTSIDE_PORT:INSIDE_PORT geocache
+   ```
+4. dfsa
