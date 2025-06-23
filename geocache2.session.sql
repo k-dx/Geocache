@@ -30,7 +30,7 @@ CREATE TABLE Waypoints(
     FOREIGN KEY (route_id) 
         REFERENCES Routes(id)
         ON DELETE CASCADE
-)
+);
 
 -- @block
 CREATE TABLE JoinedRoutes(
@@ -44,7 +44,7 @@ CREATE TABLE JoinedRoutes(
         REFERENCES Routes(id)
         ON DELETE CASCADE,
     UNIQUE(user_id, route_id)
-)
+);
 
 -- @block
 CREATE TABLE Visits(
@@ -58,7 +58,7 @@ CREATE TABLE Visits(
         REFERENCES Waypoints(id)
         ON DELETE CASCADE,
     UNIQUE(user_id, waypoint_id)
-)
+);
 
 -- @block
 SELECT * FROM Users;
