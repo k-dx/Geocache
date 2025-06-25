@@ -31,7 +31,9 @@
             <% locals.routes.forEach(route => { %>
             <div class="max-w-sm bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
                 <a href="#">
-                    <img class="rounded-t-lg" src="/assets/placeholder-image.jpg" alt="placeholder" />
+                    <% const thumbnailUrl = route.thumbnail ? route.thumbnail : '/assets/route-thumbnails/placeholder-image.jpg'; %>
+                    <% const altText = route.thumbnail ? `${route.name} thumbnail` : 'placeholder thumbnail'; %>
+                    <img class="rounded-t-lg" src="<%= thumbnailUrl %>" alt="${altText}" />
                 </a>
                 <div class="p-5">
                     <a href="/routes/view/<%= route.id %>" >

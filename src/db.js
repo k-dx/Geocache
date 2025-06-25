@@ -93,10 +93,10 @@ const createPool = async () => {
 
 const pool = await createPool();
 
-async function createRoute(name, ownerId, waypoints = null) {
+async function createRoute(name, ownerId, waypoints = null, thumbnailPath = null) {
     const res = await pool.query(
-        'INSERT INTO Routes (name, owner_id) VALUES (?, ?)',
-        [name, ownerId]
+        'INSERT INTO Routes (name, owner_id, thumbnail) VALUES (?, ?, ?)',
+        [name, ownerId, thumbnailPath]
     );
     const routeId = res[0].insertId;
     if (waypoints !== null) {
@@ -106,12 +106,13 @@ async function createRoute(name, ownerId, waypoints = null) {
                 .map((w, _) => [routeId, w.lat, w.lng, w.orderId, w.name])]
         );
     }
+    return routeId;
 }
 
-async function updateRoute(routeId, name, ownerId, waypoints = null) {
+async function updateRoute(routeId, name, ownerId, waypoints = null, thumbnailPath = null) {
     await pool.query(
-        'UPDATE Routes SET name = ? WHERE id = ? AND owner_id = ?',
-        [name, routeId, ownerId]
+        'UPDATE Routes SET name = ?, thumbnail = ? WHERE id = ? AND owner_id = ?',
+        [name, thumbnailPath, routeId, ownerId]
     );
 
     // delete waypoints that are in the database but not on the waypoints list
