@@ -316,4 +316,33 @@ async function getUserByEmail(email) {
     return rows[0];
 }
 
-export { pool, createRoute, updateRoute, getRoute, getRoutes, getPlayers, getWaypoints, getWaypoint, getWaypointVisitLink, createUser, deleteUser, getUser, getUserByEmail };
+async function getWaypointsWithMostVisits() {
+    const [rows] = await pool.query(
+        `SELECT *
+         FROM LeaderboardWaypointsWithMostVisits
+         ORDER BY visits DESC
+         LIMIT 10`
+    );
+    return rows;
+}
+async function getUsersWithMostVisits() {
+    const [rows] = await pool.query(
+        `SELECT *
+         FROM LeaderboardUsersWithMostVisits
+         ORDER BY visits DESC
+         LIMIT 10`
+    );
+    return rows;
+}
+async function getUsersWithMostCompletedRoutes() {
+    const [rows] = await pool.query(
+        `SELECT *
+         FROM LeaderboardUsersWithMostCompletedRoutes
+         ORDER BY completed_routes DESC
+         LIMIT 10`
+    );
+    return rows;
+}
+
+
+export { pool, createRoute, updateRoute, getRoute, getRoutes, getPlayers, getWaypoints, getWaypoint, getWaypointVisitLink, createUser, deleteUser, getUser, getUserByEmail, getWaypointsWithMostVisits, getUsersWithMostVisits, getUsersWithMostCompletedRoutes };

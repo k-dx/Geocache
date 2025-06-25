@@ -9,7 +9,7 @@ import accountRoute from './routes/account.js';
 import adminRoute from './routes/admin.js';
 import routesRoute from './routes/routes.js';
 import { authorize, injectUser, emailExists, passwordCorrect, oauth2, authorizationUri } from './auth.js';
-import { pool, getRoute, getWaypoints, getWaypoint, getWaypointVisitLink, createUser, deleteUser, getUser, getUserByEmail } from './db.js';
+import { pool, getRoute, getWaypoints, getWaypoint, getWaypointVisitLink, createUser, deleteUser, getUser, getUserByEmail, getWaypointsWithMostVisits, getUsersWithMostVisits, getUsersWithMostCompletedRoutes } from './db.js';
 dotenv.config();
 
 var app = express();
@@ -427,6 +427,51 @@ app.get('/logout', (req, res) => {
 
 app.get('/about', injectUser, (req, res) => {
     res.render('about');
+})
+
+async function getLeaderboards() {
+    const [
+        waypointsWithMostvisits,
+        usersWithMostVisits,
+        usersWithMostCompletedRoutes
+    ] = await Promise.all([
+        getWaypointsWithMostVisits(),
+        getUsersWithMostVisits(),
+        getUsersWithMostCompletedRoutes()
+    ]);
+    
+    const res = [
+        {
+            'title': 'Waypoints with most visits',
+            'columns': ['#', 'Waypoint name', 'Visits'],
+            'entries': waypointsWithMostvisits
+            // 'entries': [
+            //     { 'place': 1, 'name': 'Waypoint 1', 'visits': 100 },
+            //     { 'place': 2, 'name': 'Waypoint 2', 'visits': 90 },
+            //     { 'place': 3, 'name': 'Waypoint 3', 'visits': 80 },
+            //     { 'place': 4, 'name': 'Waypoint 4', 'visits': 70 }, 
+            //     { 'place': 5, 'name': 'Waypoint 5', 'visits': 60 }
+            // ]
+        },
+        {
+            'title': 'Users with most visits',
+            'columns': ['#', 'Username', 'Visits'],
+            'entries': usersWithMostVisits
+        },
+        {
+            'title': 'Users with most completed routes',
+            'columns': ['#', 'Username', 'Completed routes'],
+            'entries': usersWithMostCompletedRoutes
+        }
+    ];
+    return res;
+}
+
+app.get('/leaderboards', async (req, res) => {
+    const leaderboards = await getLeaderboards();
+    res.render('leaderboards', {
+        leaderboards: leaderboards
+    });
 })
 
 app.use('/account', accountRoute);
