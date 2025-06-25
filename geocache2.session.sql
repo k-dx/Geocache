@@ -61,5 +61,32 @@ CREATE TABLE Visits(
     UNIQUE(user_id, waypoint_id)
 );
 
+CREATE TABLE LeaderboardWaypointsWithMostVisits(
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    waypoint_id INT NOT NULL,
+    visits INT NOT NULL DEFAULT 0,
+    FOREIGN KEY (waypoint_id)
+        REFERENCES Waypoints(id)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE LeaderboardUsersWithMostVisits(
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    visits INT NOT NULL DEFAULT 0,
+    FOREIGN KEY (user_id)
+        REFERENCES Users(id)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE LeaderboardUsersWithMostCompletedRoutes(
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    completed_routes INT NOT NULL DEFAULT 0,
+    FOREIGN KEY (user_id)
+        REFERENCES Users(id)
+        ON DELETE CASCADE
+);
+
 -- @block
 SELECT * FROM Users;
