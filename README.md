@@ -12,7 +12,8 @@ Geocache is a real-life game about exploring places. Anyone can create a route c
 
 1. `cd Geocache`
 2. `docker compose up`
-3. `$ sudo mysql -h localhost -P 3306 -u root -p`
+    1. If you can't connect try uncommenting `expose` and `ports` sections in `compose.yaml`
+3. `$ sudo mysql -h 127.0.0.1 -P 3306 -u root -p`
     1. Try again if unsuccessful
 4. `mysql> CREATE DATABASE geocache;`
 5. `mysql> USE GEOCACHE;`
