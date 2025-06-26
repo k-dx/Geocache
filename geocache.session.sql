@@ -6,17 +6,18 @@ CREATE TABLE Users(
     password VARCHAR(255),
     googleId VARCHAR(255),
     CHECK (password IS NOT NULL OR googleId IS NOT NULL)
-)
+);
 
 -- @block
 CREATE TABLE Routes(
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(255) NOT NULL,
     owner_id INT,
+    thumbnail VARCHAR(255),
     FOREIGN KEY (owner_id) 
         REFERENCES Users(id)
         ON DELETE CASCADE
-)
+);
 
 -- @block
 CREATE TABLE Waypoints(
@@ -30,7 +31,7 @@ CREATE TABLE Waypoints(
     FOREIGN KEY (route_id) 
         REFERENCES Routes(id)
         ON DELETE CASCADE
-)
+);
 
 -- @block
 CREATE TABLE JoinedRoutes(
@@ -44,7 +45,7 @@ CREATE TABLE JoinedRoutes(
         REFERENCES Routes(id)
         ON DELETE CASCADE,
     UNIQUE(user_id, route_id)
-)
+);
 
 -- @block
 CREATE TABLE Visits(
@@ -58,97 +59,55 @@ CREATE TABLE Visits(
         REFERENCES Waypoints(id)
         ON DELETE CASCADE,
     UNIQUE(user_id, waypoint_id)
-)
+);
 
+CREATE TABLE LeaderboardWaypointsWithMostVisits(
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    waypoint_id INT NOT NULL,
+    visits INT NOT NULL DEFAULT 0,
+    FOREIGN KEY (waypoint_id)
+        REFERENCES Waypoints(id)
+        ON DELETE CASCADE
+);
 
--- @block
-SELECT * FROM Routes 
-LEFT JOIN JoinedRoutes ON Routes.id = JoinedRoutes.route_id
-WHERE JoinedRoutes.user_id = 10 OR JoinedRoutes.user_id IS NULL
+CREATE TABLE LeaderboardUsersWithMostVisits(
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    visits INT NOT NULL DEFAULT 0,
+    FOREIGN KEY (user_id)
+        REFERENCES Users(id)
+        ON DELETE CASCADE
+);
 
--- @block
-SELECT 
-    Routes.id,
-    Routes.name,
-    CASE 
-        WHEN JoinedRoutes.user_id IS NULL THEN 'No'
-        ELSE 'Yes'
-    END AS has_joined
-FROM Routes
-LEFT JOIN JoinedRoutes ON Routes.id = JoinedRoutes.route_id AND JoinedRoutes.user_id = 13;
+CREATE TABLE LeaderboardUsersWithMostCompletedRoutes(
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    completed_routes INT NOT NULL DEFAULT 0,
+    FOREIGN KEY (user_id)
+        REFERENCES Users(id)
+        ON DELETE CASCADE
+);
 
--- @block
-SELECT MAX(id) FROM Routes
+CREATE TABLE Achievements(
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    icon VARCHAR(255)
+);
 
--- @block
-INSERT INTO Users (username, email, password) VALUES ('kdx', 'kdx@email.com', 'abc123')
+CREATE TABLE UserAchievements(
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    achievement_id INT NOT NULL,
+    FOREIGN KEY (user_id)
+        REFERENCES Users(id)
+        ON DELETE CASCADE,
+    FOREIGN KEY (achievement_id)
+        REFERENCES Achievements(id)
+        ON DELETE CASCADE,
+    UNIQUE(user_id, achievement_id)
+);
 
 -- @block
 SELECT * FROM Users;
 
--- @block
-SELECT * FROM Routes;
-
--- @block
-SELECT * FROM Waypoints;
-
--- @block
-SELECT * FROM Visits;
-
--- @block
-SELECT * FROM JoinedRoutes
-
--- @block
-UPDATE Routes SET name = 'placeholder' WHERE id = 1 AND owner_id = 1
-
--- @block
-ALTER TABLE Users
-ADD username VARCHAR(255) NOT NULL;
-
--- @block
-SELECT * FROM Users WHERE username = 'john123'
-
--- @block
-DELETE FROM Users WHERE id BETWEEN 1 AND 4
-
--- @block
-ALTER TABLE Waypoints
-RENAME COLUMN visit_link TO uuid;
-
--- @block
-ALTER TABLE Users
-ADD CONSTRAINT chk_password_or_googleId CHECK (password IS NOT NULL OR googleId IS NOT NULL);
-
--- @block
-ALTER TABLE Users
-MODIFY password VARCHAR(255) NULL;
-
--- @block
-DELETE FROM Waypoints WHERE route_id = 2
-
--- @block
-DROP TABLE JoinedRoutes;
-
--- @block
-SELECT *
-FROM Routes LEFT JOIN JoinedRoutes ON Routes.id = JoinedRoutes.route_id
-WHERE JoinedRoutes.user_id = 1 OR JoinedRoutes.user_id IS NULL
-
--- @block
-SELECT *
-FROM Routes LEFT JOIN JoinedRoutes ON Routes.id = JoinedRoutes.route_id
-
--- @block
-SELECT Routes.id AS route_id, Routes.name, JoinedRoutes.user_id
-    FROM Routes
-    LEFT JOIN JoinedRoutes ON Routes.id = JoinedRoutes.route_id
-    WHERE (JoinedRoutes.user_id = 1 OR JoinedRoutes.user_id IS NULL)
-
--- @block
-SELECT Users.id as user_id, Users.*, JoinedRoutes.*, Visits.* FROM
-    Users JOIN JoinedRoutes ON Users.id = JoinedRoutes.user_id
-    LEFT JOIN Visits on Users.id = Visits.user_id
-    WHERE JoinedRoutes.route_id = 6
-
--- @block
-SELECT * FROM Routes WHERE owner_id = 6 AND name LIKE '%%'
