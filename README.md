@@ -3,6 +3,7 @@
 Geocache is a real-life game about exploring places. Anyone can create a route consisting of waypoints on a map. The author of the route prints QR-Codes and places them physically at location of each respective waypoint. Others can join the route here in the app and their goal is to visit all waypoints in the route by scanning the QR-Codes at the location of each waypoint. The author of the route can see who visited which waypoints in his route.
 
 ### Running
+
 1. `npm install`
 2. Create tables from `geocache2.session.sql` in MySQL db. (see next section)
 3. Fill `.env.template` and put into `.env` (`GOOGLE_*` fields are not necessary for development)
@@ -29,6 +30,7 @@ Documentation is done via JSDoc format inside comments above functions. To gener
 3. Open `out/index.html` in your browser.
 
 ### Technologies used:
+
 * NodeJS + ExpressJS with EJS template engine
 * MySQL database via `mysql2`
 * Google Maps Javascript API
@@ -39,6 +41,7 @@ Documentation is done via JSDoc format inside comments above functions. To gener
 ### Deployment (Google Cloud)
 
 Services used:
+
 * Cloud Run
 * Cloud SQL
 * Secrets Manager
