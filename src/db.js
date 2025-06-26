@@ -344,5 +344,15 @@ async function getUsersWithMostCompletedRoutes() {
     return rows;
 }
 
+async function getAchievements(userId) {
+    const [rows] = await pool.query(
+        `SELECT *
+            FROM Achievements a LEFT JOIN UserAchievements ua 
+                ON a.id = ua.achievement_id AND ua.user_id = ?`,
+        [userId]
+    );
+    return rows;
+}
 
-export { pool, createRoute, updateRoute, getRoute, getRoutes, getPlayers, getWaypoints, getWaypoint, getWaypointVisitLink, createUser, deleteUser, getUser, getUserByEmail, getWaypointsWithMostVisits, getUsersWithMostVisits, getUsersWithMostCompletedRoutes };
+
+export { pool, createRoute, updateRoute, getRoute, getRoutes, getPlayers, getWaypoints, getWaypoint, getWaypointVisitLink, createUser, deleteUser, getUser, getUserByEmail, getWaypointsWithMostVisits, getUsersWithMostVisits, getUsersWithMostCompletedRoutes, getAchievements };
