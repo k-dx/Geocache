@@ -467,7 +467,7 @@ async function getLeaderboards() {
     return res;
 }
 
-app.get('/leaderboards', async (req, res) => {
+app.get('/leaderboards', injectUser, async (req, res) => {
     const leaderboards = await getLeaderboards();
     res.render('leaderboards', {
         leaderboards: leaderboards
