@@ -443,8 +443,11 @@ async function getLeaderboards() {
     const res = [
         {
             'title': 'Waypoints with most visits',
-            'columns': ['#', 'Waypoint name', 'Visits'],
-            'entries': waypointsWithMostvisits
+            'columns': ['#', 'Visits', 'Waypoint name', 'Latitude', 'Longitude' ],
+            'entries': waypointsWithMostvisits.map((entry, index) => ({
+                place: index + 1,
+                ...entry
+            }))
             // 'entries': [
             //     { 'place': 1, 'name': 'Waypoint 1', 'visits': 100 },
             //     { 'place': 2, 'name': 'Waypoint 2', 'visits': 90 },
@@ -456,12 +459,18 @@ async function getLeaderboards() {
         {
             'title': 'Users with most visits',
             'columns': ['#', 'Username', 'Visits'],
-            'entries': usersWithMostVisits
+            'entries': usersWithMostVisits.map((entry, index) => ({
+                place: index + 1,
+                ...entry
+            }))
         },
         {
             'title': 'Users with most completed routes',
             'columns': ['#', 'Username', 'Completed routes'],
-            'entries': usersWithMostCompletedRoutes
+            'entries': usersWithMostCompletedRoutes.map((entry, index) => ({
+                place: index + 1,
+                ...entry
+            }))
         }
     ];
     return res;

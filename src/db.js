@@ -386,7 +386,7 @@ async function getUserByEmail(email) {
  * @property {number} longitude - The longitude of the waypoint.
  * @property {number} visits - The number of visits to the waypoint.
  * Retrieves the top 10 waypoints with the most visits from the database.
- * @returns {Promise<Array<Object>>} - A promise that resolves to an array of waypoint objects.
+ * @returns {Promise<Array<WaypointWithVisits>>} - A promise that resolves to an array of waypoint objects.
  */
 async function getWaypointsWithMostVisits() {
     const [rows] = await pool.query(
@@ -399,13 +399,18 @@ async function getWaypointsWithMostVisits() {
     return rows;
 }
 /**
+ * @typedef {Object} UserWithMostVisits
+ * @property {number} id - The ID of the user.
+ * @property {string} username - The username of the user.
+ * @property {number} visits - The number of visits made by the user.
  * Retrieves the top 10 users with the most visits from the database.
- * @returns {Promise<Array<Object>>} - A promise that resolves to an array of user objects.
+ * @returns {Promise<Array<UserWithMostVisits>>} - A promise that resolves to an array of user objects.
  */
 async function getUsersWithMostVisits() {
     const [rows] = await pool.query(
-        `SELECT *
-         FROM LeaderboardUsersWithMostVisits
+        `SELECT u.id, u.username, visits
+         FROM LeaderboardUsersWithMostVisits l
+            LEFT JOIN Users u ON l.user_id = u.id
          ORDER BY visits DESC
          LIMIT 10`
     );
@@ -422,8 +427,9 @@ async function getUsersWithMostVisits() {
  */
 async function getUsersWithMostCompletedRoutes() {
     const [rows] = await pool.query(
-        `SELECT *
-         FROM LeaderboardUsersWithMostCompletedRoutes
+        `SELECT u.id, u.username, completed_routes
+         FROM LeaderboardUsersWithMostCompletedRoutes l
+            LEFT JOIN Users u ON l.user_id = u.id
          ORDER BY completed_routes DESC
          LIMIT 10`
     );
