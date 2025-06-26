@@ -93,6 +93,14 @@ const createPool = async () => {
 
 const pool = await createPool();
 
+/**
+ * Creates a new route in the database with the given name, ownerId, waypoints, and thumbnailPath.
+ * @param {string} name - The name of the route.
+ * @param {number} ownerId - The ID of the user who owns the route.
+ * @param {Array<{lat: number, lng: number, orderId: number, name: string}>} waypoints - An array of waypoints for the route, each with latitude, longitude, order ID, and name.
+ * @param {string} thumbnailPath - The path to the thumbnail image for the route.
+ * @returns {Promise<number>} - The ID of the created route.
+ */
 async function createRoute(name, ownerId, waypoints = null, thumbnailPath = null) {
     const res = await pool.query(
         'INSERT INTO Routes (name, owner_id, thumbnail) VALUES (?, ?, ?)',
@@ -109,6 +117,18 @@ async function createRoute(name, ownerId, waypoints = null, thumbnailPath = null
     return routeId;
 }
 
+/**
+ * Updates an existing route in the database with the given routeId, name, ownerId, waypoints, and thumbnailPath.
+ * If a waypoint is in the database but not in the waypoints list, it will be deleted.
+ * If a waypoint is in the waypoints list but not in the database, it will be created.
+ * If a waypoint is in both the database and the waypoints list, it will    be updated.
+ * @param {number} routeId - The ID of the route to update.
+ * @param {string} name - The new name of the route.
+ * @param {number} ownerId - The ID of the user who owns the route.
+ * @param {Array<{id: number, lat: number, lng: number, orderId: number, name: string}>} waypoints - An array of waypoints for the route, each with an ID, latitude, longitude, order ID, and name.
+ * @param {string} thumbnailPath - The new path to the thumbnail image for the route.
+ * @returns {null}
+ */
 async function updateRoute(routeId, name, ownerId, waypoints = null, thumbnailPath = null) {
     await pool.query(
         'UPDATE Routes SET name = ?, thumbnail = ? WHERE id = ? AND owner_id = ?',
@@ -155,6 +175,11 @@ async function updateRoute(routeId, name, ownerId, waypoints = null, thumbnailPa
     }
 }
 
+/**
+ * Retrieves a route by its ID from the database.
+ * @param {number} id - The ID of the route to retrieve.
+ * @returns {Promise<Object>} - A promise that resolves to the route object.
+ */
 async function getRoute(id) {
     const [rows] = await pool.query(
         'SELECT * FROM Routes WHERE id = ?',
@@ -163,6 +188,11 @@ async function getRoute(id) {
     return rows[0];
 }
 
+/**
+ * Retrieves a list of routes from the database, optionally filtered by user ID and name.
+ * @param {{userId: number|null, nameLike: string}} options - An object containing optional parameters for filtering routes.
+ * @return {Promise<Array<Object>>} - A promise that resolves to an array of route objects.
+ */
 async function getRoutes({userId = null, nameLike = ''}) {
     if (userId) {
         const [rows] = await pool.query(
@@ -183,6 +213,7 @@ async function getRoutes({userId = null, nameLike = ''}) {
  * Gives a list of players (i.e. users that joined) for a given route
  * with an array of waypoints that they visited
  * @param {number} routeId 
+ * @return {Promise<Array<{user_id: number, username: string, visitedWaypoints: Array<number>}>>}
  */
 async function getPlayers(routeId) {
     const resQuery = await pool.query(
@@ -205,6 +236,11 @@ async function getPlayers(routeId) {
     return Object.values(result);
 }
 
+/**
+ * Retrieves all waypoints for a given route ID from the database.
+ * @param {number} routeId - The ID of the route for which to retrieve waypoints.
+ * @returns {Promise<Array<Object>>} - A promise that resolves to an array of waypoint objects.
+ */
 async function getWaypoints(routeId) {
     const res = await pool.query(
         'SELECT * FROM Waypoints WHERE route_id = ?',
@@ -213,6 +249,11 @@ async function getWaypoints(routeId) {
     return res[0];
 }
 
+/**
+ * Retrieves a waypoint by its ID from the database.
+ * @param {number} waypointId - The ID of the waypoint to retrieve.
+ * @returns {Promise<Object>} - A promise that resolves to the waypoint object.
+ */
 async function getWaypoint(waypointId) {
     const res = await pool.query(
         'SELECT * FROM Waypoints WHERE id = ?',
@@ -222,7 +263,8 @@ async function getWaypoint(waypointId) {
 }
 
 /**
- * @returns a random UUID that is not used by any waypoint
+ * Generates a random UUID that is not used by any waypoint in the database.
+ * @return {Promise<string>} - A promise that resolves to a random UUID.
  */
 async function randomWaypointUUID() {
     let uuid = crypto.randomUUID();
@@ -238,8 +280,9 @@ async function randomWaypointUUID() {
 }
 
 /**
- * @param {?} waypointId 
- * @returns full url that marks the waypoint as visited for the user
+ * Generates a link that marks the waypoint as visited for the user.
+ * @param {number} waypointId 
+ * @returns {Promise<string>} - A promise that resolves to a link that marks the waypoint as visited.
  */
 async function getWaypointVisitLink(waypointId) {
     const waypoint = await getWaypoint(waypointId);
@@ -256,6 +299,11 @@ async function getWaypointVisitLink(waypointId) {
     return `${BASE_URL}/visit/${uuid}`;
 }
 
+/**
+ * Hashes a password using bcrypt with a specified number of rounds.
+ * @param {string} password - The password to hash.
+ * @returns {Promise<string>} - A promise that resolves to the hashed password.
+ */
 async function hashPassword(password) {
     const rounds = 12;
     const hash = await bcrypt.hash(password, rounds);
@@ -270,7 +318,7 @@ async function hashPassword(password) {
  * @param {string} username 
  * @param {string} password (not hashed)
  * @param {string} googleId
- * @returns id of the created user
+ * @returns {Promise<number>} - A promise that resolves to the ID of the created user.
  */
 async function createUser({ email, username, password = null, googleId = null }) {
     if (password !== null) {
@@ -293,6 +341,11 @@ async function createUser({ email, username, password = null, googleId = null })
     }
 }
 
+/**
+ * Deletes a user from the database by their ID.
+ * @param {number} id - The ID of the user to delete.
+ * @returns {Promise<Object>} - A promise that resolves to the result of the delete operation
+ */
 async function deleteUser(id) {
     const res = await pool.query(
         'DELETE FROM Users WHERE id = ?',
@@ -301,6 +354,11 @@ async function deleteUser(id) {
     return res;
 }
 
+/**
+ * Retrieves a user by their ID from the database.
+ * @param {number} id - The ID of the user to retrieve.
+ * @returns {Promise<Object>} - A promise that resolves to the user object.
+ */
 async function getUser(id) {
     const [rows] = await pool.query(
         'SELECT * FROM Users WHERE id = ?',
@@ -308,6 +366,11 @@ async function getUser(id) {
     );
     return rows[0];
 }
+/**
+ * Retrieves a user by their email from the database.
+ * @param {string} email - The email of the user to retrieve.
+ * @returns {Promise<Object>} - A promise that resolves to the user object.
+ */
 async function getUserByEmail(email) {
     const [rows] = await pool.query(
         'SELECT * FROM Users WHERE email = ?',
@@ -316,15 +379,29 @@ async function getUserByEmail(email) {
     return rows[0];
 }
 
+/**
+ * @typedef {Object} WaypointWithVisits
+ * @property {string} name - The name of the waypoint.
+ * @property {number} latitude - The latitude of the waypoint.
+ * @property {number} longitude - The longitude of the waypoint.
+ * @property {number} visits - The number of visits to the waypoint.
+ * Retrieves the top 10 waypoints with the most visits from the database.
+ * @returns {Promise<Array<Object>>} - A promise that resolves to an array of waypoint objects.
+ */
 async function getWaypointsWithMostVisits() {
     const [rows] = await pool.query(
-        `SELECT *
-         FROM LeaderboardWaypointsWithMostVisits
+        `SELECT name, latitude, longitude, visits
+         FROM LeaderboardWaypointsWithMostVisits l
+         LEFT JOIN Waypoints w ON l.waypoint_id = w.id
          ORDER BY visits DESC
          LIMIT 10`
     );
     return rows;
 }
+/**
+ * Retrieves the top 10 users with the most visits from the database.
+ * @returns {Promise<Array<Object>>} - A promise that resolves to an array of user objects.
+ */
 async function getUsersWithMostVisits() {
     const [rows] = await pool.query(
         `SELECT *
@@ -334,6 +411,15 @@ async function getUsersWithMostVisits() {
     );
     return rows;
 }
+
+/**
+ * @typedef {Object} UserWithCompletedRoutes
+ * @property {number} id - The ID of the user.
+ * @property {string} username - The username of the user.
+ * @property {number} completed_routes - The number of completed routes for the user.
+ * Retrieves the top 10 users with the most completed routes from the database.
+ * @returns {Promise<Array<UserWithCompletedRoutes>>} - A promise that resolves to an array of user objects.
+ */
 async function getUsersWithMostCompletedRoutes() {
     const [rows] = await pool.query(
         `SELECT *
@@ -344,6 +430,20 @@ async function getUsersWithMostCompletedRoutes() {
     return rows;
 }
 
+/**
+ * @typedef {Object} Achievement
+ * @property {number} id - The ID of the achievement.
+ * @property {string} name - The name of the achievement.
+ * @property {string} description - A description of the achievement.
+ * @property {string} icon - The URL of the icon representing the achievement.
+ * @property {number|null} user_id - The ID of the user who completed the achievement. Null if the user has not completed the achievement.
+ */
+/**
+ * Retrieves all achievements for a user, including those not yet completed.
+ * If the user has not completed an achievement, `user_id` will be null.
+ * @param {number} userId - The ID of the user for whom to retrieve achievements.
+ * @returns {Promise<Array<Achievement>>} - A promise that resolves to an array of achievement objects.
+ */
 async function getAchievements(userId) {
     const [rows] = await pool.query(
         `SELECT *
