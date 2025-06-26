@@ -8,6 +8,7 @@ import qrcode from 'qrcode';
 import accountRoute from './routes/account.js';
 import adminRoute from './routes/admin.js';
 import routesRoute from './routes/routes.js';
+import apiRoute from './routes/api.js';
 import { authorize, injectUser, emailExists, passwordCorrect, oauth2, authorizationUri } from './auth.js';
 import { pool, getRoute, getWaypoints, getWaypoint, getWaypointVisitLink, createUser, deleteUser, getUser, getUserByEmail, getWaypointsWithMostVisits, getUsersWithMostVisits, getUsersWithMostCompletedRoutes } from './db.js';
 dotenv.config();
@@ -486,6 +487,7 @@ app.get('/leaderboards', injectUser, async (req, res) => {
 app.use('/account', accountRoute);
 app.use('/admin', adminRoute);
 app.use('/routes', routesRoute);
+app.use('/api', apiRoute);
 
 createServer(app).listen(process.env.PORT);
 
