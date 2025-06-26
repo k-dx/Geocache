@@ -20,6 +20,14 @@ Geocache is a real-life game about exploring places. Anyone can create a route c
 6. `mysql> source geocache2.session.sql` (or create tables by pasting commands from `geocache2.session.sql`)
 7. (fix for permissions) `mysql> ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'password';`
 
+### Generating documentation
+
+Documentation is done via JSDoc format inside comments above functions. To generate HTML from the comments:
+
+1. `npm install -g jsdoc`
+2. `jsdoc -r src -d out`
+3. Open `out/index.html` in your browser.
+
 ### Technologies used:
 * NodeJS + ExpressJS with EJS template engine
 * MySQL database via `mysql2`
