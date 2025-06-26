@@ -6,7 +6,7 @@ Geocache is a real-life game about exploring places. Anyone can create a route c
 1. `npm install`
 2. Create tables from `geocache2.session.sql` in MySQL db. (see next section)
 3. Fill `.env.template` and put into `.env` (`GOOGLE_*` fields are not necessary for development)
-4. `npm start` for production or `npm run dev` for dev build
+4. `npm start` for production or `npm run dev` for dev build (you might need to `npm install -g nodemon` before `npm run dev`)
 
 ### Creating the mysql database (locally in docker)
 
