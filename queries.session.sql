@@ -89,3 +89,16 @@ SELECT Users.id as user_id, Users.*, JoinedRoutes.*, Visits.* FROM
 
 -- @block
 SELECT * FROM Routes WHERE owner_id = 6 AND name LIKE '%%'
+
+-- @block
+SELECT w.name, w.latitude, w.longitude, visits
+FROM LeaderboardWaypointsWithMostVisits lw
+JOIN Waypoints w ON lw.waypoint_id = w.id
+ORDER BY visits DESC;
+
+-- @block
+SELECT u.username, l.visits
+FROM LeaderboardUsersWithMostVisits l
+JOIN Users u ON l.user_id = u.id
+ORDER BY visits DESC
+LIMIT 10;

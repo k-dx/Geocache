@@ -1,4 +1,8 @@
 -- @block
+CREATE DATABASE IF NOT EXISTS geocache;
+USE geocache;
+
+-- @block
 CREATE TABLE Users(
     id INT PRIMARY KEY AUTO_INCREMENT,
     username VARCHAR(255) NOT NULL,
@@ -62,8 +66,7 @@ CREATE TABLE Visits(
 );
 
 CREATE TABLE LeaderboardWaypointsWithMostVisits(
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    waypoint_id INT NOT NULL UNIQUE,
+    waypoint_id INT PRIMARY KEY,
     visits INT NOT NULL DEFAULT 0,
     FOREIGN KEY (waypoint_id)
         REFERENCES Waypoints(id)
@@ -71,8 +74,7 @@ CREATE TABLE LeaderboardWaypointsWithMostVisits(
 );
 
 CREATE TABLE LeaderboardUsersWithMostVisits (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    user_id INT NOT NULL UNIQUE,
+    user_id INT PRIMARY KEY,
     visits INT NOT NULL DEFAULT 0,
     FOREIGN KEY (user_id)
         REFERENCES Users(id)
@@ -80,8 +82,7 @@ CREATE TABLE LeaderboardUsersWithMostVisits (
 );
 
 CREATE TABLE LeaderboardUsersWithMostCompletedRoutes(
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    user_id INT NOT NULL UNIQUE,
+    user_id INT PRIMARY KEY,
     completed_routes INT NOT NULL DEFAULT 0,
     FOREIGN KEY (user_id)
         REFERENCES Users(id)
@@ -170,19 +171,3 @@ BEGIN
 END;
 //
 DELIMITER ;
-
-
-
--- @block
-SELECT w.name, w.latitude, w.longitude, visits
-FROM LeaderboardWaypointsWithMostVisits lw
-JOIN Waypoints w ON lw.waypoint_id = w.id
-ORDER BY visits DESC;
-
-
--- @block
-SELECT u.username, l.visits
-FROM LeaderboardUsersWithMostVisits l
-JOIN Users u ON l.user_id = u.id
-ORDER BY visits DESC
-LIMIT 10;
