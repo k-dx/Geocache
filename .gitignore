@@ -3,6 +3,10 @@ src/public/styles/output.css
 src/public/assets/route-thumbnails/*
 !src/public/assets/route-thumbnails/placeholder-image.jpg
 
+README.pdf
+
+# -----------------------------------------------------------------------------
+
 # taken from https://github.com/github/gitignore/blob/main/Node.gitignore
 # Logs
 logs
