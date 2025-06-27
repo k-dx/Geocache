@@ -390,7 +390,7 @@ async function getUserByEmail(email) {
  */
 async function getWaypointsWithMostVisits() {
     const [rows] = await pool.query(
-        `SELECT name, latitude, longitude, visits
+        `SELECT visits, name, latitude, longitude
          FROM LeaderboardWaypointsWithMostVisits l
          LEFT JOIN Waypoints w ON l.waypoint_id = w.id
          ORDER BY visits DESC
@@ -408,7 +408,7 @@ async function getWaypointsWithMostVisits() {
  */
 async function getUsersWithMostVisits() {
     const [rows] = await pool.query(
-        `SELECT u.id, u.username, visits
+        `SELECT u.username, visits
          FROM LeaderboardUsersWithMostVisits l
             LEFT JOIN Users u ON l.user_id = u.id
          ORDER BY visits DESC
@@ -427,7 +427,7 @@ async function getUsersWithMostVisits() {
  */
 async function getUsersWithMostCompletedRoutes() {
     const [rows] = await pool.query(
-        `SELECT u.id, u.username, completed_routes
+        `SELECT u.username, completed_routes
          FROM LeaderboardUsersWithMostCompletedRoutes l
             LEFT JOIN Users u ON l.user_id = u.id
          ORDER BY completed_routes DESC

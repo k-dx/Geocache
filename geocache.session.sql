@@ -81,7 +81,7 @@ CREATE TABLE LeaderboardUsersWithMostVisits (
 
 CREATE TABLE LeaderboardUsersWithMostCompletedRoutes(
     id INT PRIMARY KEY AUTO_INCREMENT,
-    user_id INT NOT NULL,
+    user_id INT NOT NULL UNIQUE,
     completed_routes INT NOT NULL DEFAULT 0,
     FOREIGN KEY (user_id)
         REFERENCES Users(id)
@@ -138,6 +138,47 @@ END;
 //
 
 DELIMITER ;
+
+-- @block
+DELIMITER //
+
+CREATE TRIGGER after_visits_insert_check_completed_routes
+AFTER INSERT ON Visits
+FOR EACH ROW
+BEGIN
+    DECLARE total_wp INT;
+    DECLARE visited_wp INT;
+
+    -- route_id of the waypoint
+    DECLARE route INT;
+    SELECT route_id INTO route FROM Waypoints WHERE id = NEW.waypoint_id;
+
+    -- total count of waypoints on this route
+    SELECT COUNT(*) INTO total_wp FROM Waypoints WHERE route_id = route;
+
+    -- count of unique waypoints on this route visited by the user
+    SELECT COUNT(*) INTO visited_wp 
+    FROM Visits V
+    JOIN Waypoints W ON V.waypoint_id = W.id
+    WHERE V.user_id = NEW.user_id AND W.route_id = route;
+
+    IF visited_wp = total_wp THEN
+        INSERT INTO LeaderboardUsersWithMostCompletedRoutes (user_id, completed_routes)
+        VALUES (NEW.user_id, 1)
+        ON DUPLICATE KEY UPDATE completed_routes = completed_routes + 1;
+
+        DELETE FROM LeaderboardUsersWithMostCompletedRoutes
+        WHERE id NOT IN (
+            SELECT id FROM (
+                SELECT id FROM LeaderboardUsersWithMostCompletedRoutes 
+                ORDER BY completed_routes DESC LIMIT 10
+            ) AS top_routes
+        );
+    END IF;
+END;
+//
+DELIMITER ;
+
 
 
 -- @block
