@@ -34,11 +34,11 @@ Documentation is done via JSDoc format inside comments above functions. To gener
 * NodeJS + ExpressJS with EJS template engine
 * MySQL database via `mysql2`
 * Google Maps Javascript API
-* OAuth2 (Google Accounts)
+* OAuth2 (Google Accounts) (currently disabled, needs Google API key)
 * TailwindCSS with Flowbite component library
-* Docker(file)
+* Docker(file) + Docker compose for local database
 
-### Deployment (Google Cloud)
+<!-- ### Deployment (Google Cloud)
 
 Services used:
 
@@ -46,4 +46,4 @@ Services used:
 * Cloud SQL
 * Secrets Manager
 
-See [deploy.md](./deploy.md) for details. I don't keep an instance up as Cloud SQL in not cheap.
+See [deploy.md](./deploy.md) for details. I don't keep an instance up as Cloud SQL in not cheap. -->
