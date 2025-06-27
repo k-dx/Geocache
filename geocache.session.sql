@@ -63,16 +63,16 @@ CREATE TABLE Visits(
 
 CREATE TABLE LeaderboardWaypointsWithMostVisits(
     id INT PRIMARY KEY AUTO_INCREMENT,
-    waypoint_id INT NOT NULL,
+    waypoint_id INT NOT NULL UNIQUE,
     visits INT NOT NULL DEFAULT 0,
     FOREIGN KEY (waypoint_id)
         REFERENCES Waypoints(id)
         ON DELETE CASCADE
 );
 
-CREATE TABLE LeaderboardUsersWithMostVisits(
+CREATE TABLE LeaderboardUsersWithMostVisits (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    user_id INT NOT NULL,
+    user_id INT NOT NULL UNIQUE,
     visits INT NOT NULL DEFAULT 0,
     FOREIGN KEY (user_id)
         REFERENCES Users(id)
@@ -108,6 +108,48 @@ CREATE TABLE UserAchievements(
     UNIQUE(user_id, achievement_id)
 );
 
--- @block
-SELECT * FROM Users;
 
+-- @block
+DELIMITER //
+
+CREATE TRIGGER trg_after_visit_insert
+AFTER INSERT ON Visits
+FOR EACH ROW
+BEGIN
+  INSERT INTO LeaderboardUsersWithMostVisits (user_id, visits)
+  VALUES (NEW.user_id, 1)
+  ON DUPLICATE KEY UPDATE visits = visits + 1;
+END;
+//
+
+DELIMITER ;
+
+-- @block
+DELIMITER //
+
+CREATE TRIGGER trg_after_visit_insert_waypoint
+AFTER INSERT ON Visits
+FOR EACH ROW
+BEGIN
+  INSERT INTO LeaderboardWaypointsWithMostVisits (waypoint_id, visits)
+  VALUES (NEW.waypoint_id, 1)
+  ON DUPLICATE KEY UPDATE visits = visits + 1;
+END;
+//
+
+DELIMITER ;
+
+
+-- @block
+SELECT w.name, w.latitude, w.longitude, visits
+FROM LeaderboardWaypointsWithMostVisits lw
+JOIN Waypoints w ON lw.waypoint_id = w.id
+ORDER BY visits DESC;
+
+
+-- @block
+SELECT u.username, l.visits
+FROM LeaderboardUsersWithMostVisits l
+JOIN Users u ON l.user_id = u.id
+ORDER BY visits DESC
+LIMIT 10;
