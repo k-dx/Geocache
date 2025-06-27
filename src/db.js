@@ -378,6 +378,16 @@ async function getUserByEmail(email) {
     );
     return rows[0];
 }
+/**
+ * Retrieves all users from the database.
+ * @returns {Promise<Array<Object>>} - A promise that resolves to an array of user
+ */
+async function getUsers() {
+    const [rows] = await pool.query(
+        'SELECT * FROM Users'
+    );
+    return rows;
+}
 
 /**
  * @typedef {Object} WaypointWithVisits
@@ -461,4 +471,4 @@ async function getAchievements(userId) {
 }
 
 
-export { pool, createRoute, updateRoute, getRoute, getRoutes, getPlayers, getWaypoints, getWaypoint, getWaypointVisitLink, createUser, deleteUser, getUser, getUserByEmail, getWaypointsWithMostVisits, getUsersWithMostVisits, getUsersWithMostCompletedRoutes, getAchievements };
+export { pool, createRoute, updateRoute, getRoute, getRoutes, getPlayers, getWaypoints, getWaypoint, getWaypointVisitLink, createUser, deleteUser, getUser, getUserByEmail, getUsers, getWaypointsWithMostVisits, getUsersWithMostVisits, getUsersWithMostCompletedRoutes, getAchievements };
