@@ -16,10 +16,8 @@ Geocache is a real-life game about exploring places. Anyone can create a route c
     1. If you can't connect try uncommenting `expose` and `ports` sections in `compose.yaml`
 3. `$ sudo mysql -h 127.0.0.1 -P 3306 -u root -p`
     1. Try again if unsuccessful
-4. `mysql> CREATE DATABASE geocache;`
-5. `mysql> USE GEOCACHE;`
-6. `mysql> source geocache2.session.sql` (or create tables by pasting commands from `geocache2.session.sql`)
-7. (fix for permissions) `mysql> ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'password';`
+4. `mysql> source geocache2.session.sql` (or create tables by pasting commands from `geocache2.session.sql`)
+5. (fix for permissions) `mysql> ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'password';`
 
 ### Generating documentation
 
@@ -37,6 +35,10 @@ Documentation is done via JSDoc format inside comments above functions. To gener
 * OAuth2 (Google Accounts) (currently disabled, needs Google API key)
 * TailwindCSS with Flowbite component library
 * Docker(file) + Docker compose for local database
+
+### E-R Diagram
+
+![](docs/er-diagram.png)
 
 <!-- ### Deployment (Google Cloud)
 
