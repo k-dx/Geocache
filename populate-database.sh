@@ -7,6 +7,7 @@ sudo mysql -h 127.0.0.1 -u root -p < /home/kuba/Geocache/geocache.session.sql
 for i in {1..10}
 do
   curl -X POST http://localhost:3000/register -d "username=user$i&email=user$i@example.com&password=password"
+  echo "User $i created"
 done
 
 sudo mysql -h 127.0.0.1 -u root -p geocache < /home/kuba/Geocache/example-data.session.sql

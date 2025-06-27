@@ -29,13 +29,13 @@ INSERT INTO Routes(name, owner_id) VALUES
 
 -- Waypoints
 INSERT INTO Waypoints(latitude, longitude, route_id, order_id, name) VALUES
-  (50.0614, 19.9383, 1, 1, 'Wawel Castle'),
-  (50.0647, 19.9450, 1, 2, 'Main Square'),
-  (50.0670, 19.9120, 1, 3, 'Kazimierz'),
-  (52.2297, 21.0122, 2, 1, 'Old Town'),
-  (52.2300, 21.0000, 2, 2, 'Łazienki Park'),
-  (54.3520, 18.6466, 3, 1, 'Neptune Fountain'),
-  (54.3500, 18.6500, 3, 2, 'St. Mary Church');
+  (50.0614, 19.9383, 1, 0, 'Wawel Castle'),
+  (50.0647, 19.9450, 1, 1, 'Main Square'),
+  (50.0670, 19.9120, 1, 2, 'Kazimierz'),
+  (52.2297, 21.0122, 2, 0, 'Old Town'),
+  (52.2300, 21.0000, 2, 1, 'Łazienki Park'),
+  (54.3520, 18.6466, 3, 0, 'Neptune Fountain'),
+  (54.3500, 18.6500, 3, 1, 'St. Mary Church');
 
 -- Joined Routes
 INSERT INTO JoinedRoutes(user_id, route_id) VALUES
