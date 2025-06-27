@@ -258,6 +258,37 @@ END;
 
 DELIMITER ;
 
+DELIMITER //
+
+CREATE TRIGGER trg_before_route_delete
+BEFORE DELETE ON Routes
+FOR EACH ROW
+BEGIN
+  DECLARE wp_count INT;
+
+  -- 1. number of waypoints on this route
+  SELECT COUNT(*) INTO wp_count FROM Waypoints WHERE route_id = OLD.id;
+
+  -- 2. decrease number of completed_routes if someone has completed it
+  UPDATE LeaderboardUsersWithMostCompletedRoutes L
+  JOIN (
+    SELECT V.user_id
+    FROM Visits V
+    JOIN Waypoints W ON V.waypoint_id = W.id
+    WHERE W.route_id = OLD.id
+    GROUP BY V.user_id
+    HAVING COUNT(DISTINCT W.id) = wp_count
+  ) AS Completed ON L.user_id = Completed.user_id
+  SET L.completed_routes = L.completed_routes - 1;
+
+  -- 3. delete user from completed leaderboard if has 0
+  DELETE FROM LeaderboardUsersWithMostCompletedRoutes
+  WHERE completed_routes <= 0;
+END;
+//
+
+DELIMITER ;
+
 
 
 -- @block
