@@ -1,8 +1,4 @@
 -- @block
-CREATE DATABASE IF NOT EXISTS geocache;
-USE geocache;
-
--- @block
 CREATE TABLE Users(
     id INT PRIMARY KEY AUTO_INCREMENT,
     username VARCHAR(255) NOT NULL,
@@ -66,7 +62,8 @@ CREATE TABLE Visits(
 );
 
 CREATE TABLE LeaderboardWaypointsWithMostVisits(
-    waypoint_id INT PRIMARY KEY,
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    waypoint_id INT NOT NULL UNIQUE,
     visits INT NOT NULL DEFAULT 0,
     FOREIGN KEY (waypoint_id)
         REFERENCES Waypoints(id)
@@ -74,7 +71,8 @@ CREATE TABLE LeaderboardWaypointsWithMostVisits(
 );
 
 CREATE TABLE LeaderboardUsersWithMostVisits (
-    user_id INT PRIMARY KEY,
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL UNIQUE,
     visits INT NOT NULL DEFAULT 0,
     FOREIGN KEY (user_id)
         REFERENCES Users(id)
@@ -82,7 +80,8 @@ CREATE TABLE LeaderboardUsersWithMostVisits (
 );
 
 CREATE TABLE LeaderboardUsersWithMostCompletedRoutes(
-    user_id INT PRIMARY KEY,
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL UNIQUE,
     completed_routes INT NOT NULL DEFAULT 0,
     FOREIGN KEY (user_id)
         REFERENCES Users(id)
@@ -108,6 +107,11 @@ CREATE TABLE UserAchievements(
         ON DELETE CASCADE,
     UNIQUE(user_id, achievement_id)
 );
+
+
+
+-- INSERT TRIGGERS
+
 
 
 -- @block
@@ -171,3 +175,101 @@ BEGIN
 END;
 //
 DELIMITER ;
+
+
+
+-- DELETE TRIGGERS
+
+
+DELIMITER //
+
+CREATE PROCEDURE AfterWaypointDelete(IN wp_id INT, IN route INT)
+BEGIN
+  DECLARE wp_count INT;
+
+  -- 1. delete waypoint from waypoint leaderboard
+  DELETE FROM LeaderboardWaypointsWithMostVisits
+  WHERE waypoint_id = wp_id;
+
+  -- 2. decrease visits in user leaderboard (delete if 0)
+  UPDATE LeaderboardUsersWithMostVisits
+  SET visits = visits - 1
+  WHERE user_id IN (
+    SELECT user_id FROM Visits WHERE waypoint_id = wp_id
+  );
+
+  DELETE FROM LeaderboardUsersWithMostVisits
+  WHERE visits <= 0;
+
+  -- 3. check if after waypoint deletion someone has completed the route
+  -- remaining number of waypoints in the route
+  SELECT COUNT(*) INTO wp_count FROM Waypoints WHERE route_id = route;
+
+  -- 4. for users who have not visited the deleted waypoint but now visited all remaining waypoints in that route
+  INSERT INTO LeaderboardUsersWithMostCompletedRoutes (user_id, completed_routes)
+  SELECT user_id, 1
+  FROM (
+    SELECT V.user_id
+    FROM Visits V
+    JOIN Waypoints W ON V.waypoint_id = W.id
+    WHERE W.route_id = route
+      AND W.id != wp_id
+    GROUP BY V.user_id
+    HAVING COUNT(DISTINCT W.id) = wp_count - 1  -- user has visited all remaining waypoints
+      AND V.user_id NOT IN (
+        SELECT user_id FROM Visits WHERE waypoint_id = wp_id  -- didn't visit deleted waypoint
+      )
+      AND V.user_id NOT IN (
+        SELECT user_id
+        FROM (
+          SELECT V.user_id
+          FROM Visits V
+          JOIN Waypoints W ON V.waypoint_id = W.id
+          WHERE W.route_id = route
+          GROUP BY V.user_id
+          HAVING COUNT(DISTINCT W.id) + 1 = wp_count + 1  -- already completed before
+        ) AS AlreadyCompleted
+      )
+  ) AS NewlyCompleted
+  ON DUPLICATE KEY UPDATE completed_routes = completed_routes + 1;
+
+  -- 5. delete the route if it has 0 waypoints after deletion
+  SELECT COUNT(*) INTO wp_count FROM Waypoints WHERE route_id = route;
+
+  IF wp_count = 1 THEN
+    DELETE FROM Routes WHERE id = route;
+  END IF;
+
+END;
+//
+
+DELIMITER ;
+
+
+DELIMITER //
+
+CREATE TRIGGER trg_after_waypoint_delete
+BEFORE DELETE ON Waypoints
+FOR EACH ROW
+BEGIN
+  CALL AfterWaypointDelete(OLD.id, OLD.route_id);
+END;
+//
+
+DELIMITER ;
+
+
+
+-- @block
+SELECT w.name, w.latitude, w.longitude, visits
+FROM LeaderboardWaypointsWithMostVisits lw
+JOIN Waypoints w ON lw.waypoint_id = w.id
+ORDER BY visits DESC;
+
+
+-- @block
+SELECT u.username, l.visits
+FROM LeaderboardUsersWithMostVisits l
+JOIN Users u ON l.user_id = u.id
+ORDER BY visits DESC
+LIMIT 10;
