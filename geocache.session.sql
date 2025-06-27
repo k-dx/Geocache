@@ -398,6 +398,15 @@ END;
 DELIMITER ;
 
 
+
+INSERT INTO Achievements (id, name, description) VALUES
+(1, 'First Step', 'Join your first route'),
+(2, 'Trailblazer', 'Create your own route'),
+(3, 'Explorer', 'Visit 5 waypoints'),
+(4, 'Globetrotter', 'Visit 100 waypoints'),
+(5, 'Finisher', 'Complete a route by visiting all its waypoints');
+
+
 -- @block
 SELECT w.name, w.latitude, w.longitude, visits
 FROM LeaderboardWaypointsWithMostVisits lw
