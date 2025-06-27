@@ -176,6 +176,21 @@ async function updateRoute(routeId, name, ownerId, waypoints = null, thumbnailPa
 }
 
 /**
+ * Deletes a route based on routeId.
+ */
+async function deleteRoute(routeId) {
+    await pool.query(
+        'DELETE FROM Waypoints WHERE route_id = ?',
+        [ routeId ]
+    );
+
+    await pool.query(
+        'DELETE FROM Routes WHERE id = ?',
+        [ routeId ]
+    );
+}
+
+/**
  * Retrieves a route by its ID from the database.
  * @param {number} id - The ID of the route to retrieve.
  * @returns {Promise<Object>} - A promise that resolves to the route object.
@@ -193,7 +208,7 @@ async function getRoute(id) {
  * @param {{userId: number|null, nameLike: string}} options - An object containing optional parameters for filtering routes.
  * @return {Promise<Array<Object>>} - A promise that resolves to an array of route objects.
  */
-async function getRoutes({userId = null, nameLike = ''}) {
+async function getRoutes({userId = null, nameLike = ''} = {}) {
     if (userId) {
         const [rows] = await pool.query(
             'SELECT * FROM Routes WHERE owner_id = ? AND name LIKE ?',
@@ -207,6 +222,52 @@ async function getRoutes({userId = null, nameLike = ''}) {
         );
         return rows;
     }
+}
+
+/**
+ * Retrieves the total number of routes in the database.
+ * @return {Promise<number>} - A promise that resolves to the count of routes.
+ */
+async function getRouteCount() {
+    const [rows] = await pool.query(
+        'SELECT COUNT(*) as count FROM Routes'
+    );
+    return rows[0].count;
+}
+
+/**
+ * Retrieves the total number of completed routes in the database.
+ * A completed route is one that has at least one user who has visited all waypoints.
+ * @return {Promise<number>} - A promise that resolves to the count of completed routes.
+ */
+async function getCompletedRouteCount() {
+    const [rows] = await pool.query(
+        `
+        WITH RouteWaypoints AS (
+            SELECT r.id as route_id, COUNT(DISTINCT w.id) as waypoints
+            FROM Routes r JOIN Waypoints w ON r.id = w.route_id
+            GROUP BY route_id
+        ),
+        RouteUserVisits AS (
+            SELECT w.route_id as route_id, v.user_id as user_id, COUNT(*) as visits
+            FROM Waypoints w JOIN Visits v ON w.id = v.waypoint_id
+            GROUP BY w.route_id, v.user_id
+        )
+        SELECT COUNT(DISTINCT rw.route_id) as count 
+        FROM RouteWaypoints rw 
+            JOIN RouteUserVisits ru ON rw.route_id = ru.route_id
+        WHERE rw.waypoints = ru.visits
+        `);
+    return rows[0].count;
+}
+
+async function getVisitedWaypointCount() {
+    const [rows] = await pool.query(
+        `SELECT waypoint_id, COUNT(DISTINCT user_id) as count 
+        FROM Visits
+        GROUP BY waypoint_id`
+    );
+    return rows[0].count;
 }
 
 /**
@@ -260,6 +321,17 @@ async function getWaypoint(waypointId) {
         [waypointId]
     );
     return res[0][0];
+}
+
+/**
+ * Retrieves the total number of waypoints in the database.
+ * @returns {Promise<number>} - A promise that resolves to the count of waypoints.
+ */
+async function getWaypointCount() {
+    const [rows] = await pool.query(
+        'SELECT COUNT(*) as count FROM Waypoints'
+    );
+    return rows[0].count;
 }
 
 /**
@@ -390,6 +462,17 @@ async function getUsers() {
 }
 
 /**
+ * Retrieves the total number of users in the database.
+ * @returns {Promise<number>} - A promise that resolves to the count of users.
+ */
+async function getUserCount() {
+    const [rows] = await pool.query(
+        'SELECT COUNT(*) as count FROM Users'
+    );
+    return rows[0].count;
+}
+
+/**
  * @typedef {Object} WaypointWithVisits
  * @property {string} name - The name of the waypoint.
  * @property {number} latitude - The latitude of the waypoint.
@@ -471,4 +554,29 @@ async function getAchievements(userId) {
 }
 
 
-export { pool, createRoute, updateRoute, getRoute, getRoutes, getPlayers, getWaypoints, getWaypoint, getWaypointVisitLink, createUser, deleteUser, getUser, getUserByEmail, getUsers, getWaypointsWithMostVisits, getUsersWithMostVisits, getUsersWithMostCompletedRoutes, getAchievements };
+export { 
+    pool,
+    createRoute,
+    updateRoute,
+    deleteRoute,
+    getRoute,
+    getRoutes,
+    getRouteCount,
+    getCompletedRouteCount,
+    getVisitedWaypointCount,
+    getPlayers,
+    getWaypoints,
+    getWaypoint,
+    getWaypointCount,
+    getWaypointVisitLink,
+    createUser,
+    deleteUser,
+    getUser,
+    getUserByEmail,
+    getUsers,
+    getUserCount,
+    getWaypointsWithMostVisits,
+    getUsersWithMostVisits,
+    getUsersWithMostCompletedRoutes,
+    getAchievements
+};

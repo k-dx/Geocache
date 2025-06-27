@@ -1,6 +1,16 @@
 import { Router } from 'express';
 import cors from 'cors';
-import { getUsers } from '../db.js'; // Adjust the import path as necessary
+import { 
+  deleteUser,
+  getRoutes,
+  deleteRoute,
+  getUsers,
+  getUserCount,
+  getWaypointCount,
+  getRouteCount,
+  getCompletedRouteCount,
+  getVisitedWaypointCount
+ } from '../db.js'; // Adjust the import path as necessary
 
 const router = Router();
 
@@ -29,24 +39,71 @@ router.get('/users', async (req, res) => {
     id: user.id,
     username: user.username,
     email: user.email,
-    googleId: user.googleId || null // Ensure googleId is null if not present
+    googleId: user.googleId ?? '-' // Ensure googleId is null if not present
   }));
   res.json(result);
 });
-//   res.json([
-//     { id: 1, username: 'John Doe', email: 'john@example.com', googleId: '1234567890' },
-//     { id: 2, username: 'Jane Smith', email: 'jane@example.com', googleId: null },
-//     { id: 3, username: 'Alice Johnson', email: 'alice@example.com', googleId: null }
-//   ]);
-// });
 
-router.delete('/users/:id', (req, res) => {
+router.delete('/users/:id', async (req, res) => {
   const userId = parseInt(req.params.id, 10);
   if (isNaN(userId)) {
     return res.status(400).json({ error: 'Invalid user ID' });
   }
-  // TODO: Here you would typically delete the user from the database
+  try {
+    await deleteUser(userId);
+  } catch (error) {
+    return res.status(500).json({ error: 'Failed to delete user' });
+  }
   res.json({ message: `User with ID ${userId} deleted successfully` });
+});
+
+router.get('/routes', async (req, res) => {
+  const routes = await getRoutes();
+  const result = routes.map(route => ({
+    id: route.id,
+    name: route.name,
+    owner_id: route.owner_id,
+    thumbnail: route.thumbnail ?? '-',
+  }));
+  res.json(result);
+});
+
+router.delete('/route/:id', async (req, res) => {
+  const routeId = parseInt(req.params.id, 10);
+  if (isNaN(routeId)) {
+    return res.status(400).json({ error: 'Invalid route ID' });
+  }
+  try {
+    await deleteRoute(routeId)
+  } catch (error) {
+    return res.status(500).json({ error: 'Failed to delete route' });
+  }
+  res.json({ message: `Route with ID ${routeId} deleted successfully` });
+});
+
+router.get('/routes/count', async (req, res) => {
+  const count = await getRouteCount();
+  res.json({ count });
+});
+
+router.get('/users/count', async (req, res) => {
+  const count = await getUserCount();
+  res.json({ count });
+});
+
+router.get('/waypoints/count', async (req, res) => {
+  const count = await getWaypointCount();
+  res.json({ count });
+});
+
+router.get('/routes/completed-count', async (req, res) => {
+  const count = await getCompletedRouteCount();
+  res.json({ count });
+});
+
+router.get('/waypoints/visited-count', async (req, res) => {
+  const count = await getVisitedWaypointCount();
+  res.json({ count });
 });
 
 export default router;

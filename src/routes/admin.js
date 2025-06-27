@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { authorize, injectUser } from '../auth.js';
-import { pool, createRoute, updateRoute, getRoute, getRoutes, getWaypoints,
+import { createRoute, updateRoute, deleteRoute, getRoute, getRoutes, getWaypoints,
          getPlayers } from '../db.js';
 import { EDIT_ROUTE, CREATE_ROUTE } from '../constants.js';
 import fs from 'fs';
@@ -250,15 +250,7 @@ router.post('/routes/delete/:route_id', [authorize, injectUser], async (req, res
         return;
     }
 
-    await pool.query(
-        'DELETE FROM Waypoints WHERE route_id = ?',
-        [ routeId ]
-    );
-
-    await pool.query(
-        'DELETE FROM Routes WHERE id = ?',
-        [ routeId ]
-    );
+    await deleteRoute(routeId);
 
     res.redirect('/admin/routes/list');
 })
