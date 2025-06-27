@@ -166,14 +166,6 @@ BEGIN
         INSERT INTO LeaderboardUsersWithMostCompletedRoutes (user_id, completed_routes)
         VALUES (NEW.user_id, 1)
         ON DUPLICATE KEY UPDATE completed_routes = completed_routes + 1;
-
-        DELETE FROM LeaderboardUsersWithMostCompletedRoutes
-        WHERE id NOT IN (
-            SELECT id FROM (
-                SELECT id FROM LeaderboardUsersWithMostCompletedRoutes 
-                ORDER BY completed_routes DESC LIMIT 10
-            ) AS top_routes
-        );
     END IF;
 END;
 //
