@@ -291,6 +291,113 @@ DELIMITER ;
 
 
 
+-- ACHIEVEMENTS
+
+-- @block
+-- join any route
+DELIMITER //
+
+CREATE TRIGGER trg_achievement_first_step
+AFTER INSERT ON JoinedRoutes
+FOR EACH ROW
+BEGIN
+  INSERT IGNORE INTO UserAchievements(user_id, achievement_id)
+  VALUES (NEW.user_id, 1);
+END;
+//
+
+DELIMITER ;
+
+-- @block 
+-- create own route
+DELIMITER //
+
+CREATE TRIGGER trg_achievement_trailblazer
+AFTER INSERT ON Routes
+FOR EACH ROW
+BEGIN
+  INSERT IGNORE INTO UserAchievements(user_id, achievement_id)
+  VALUES (NEW.owner_id, 2);
+END;
+//
+
+DELIMITER ;
+
+-- @block
+-- visit 5 waypoints
+DELIMITER //
+
+CREATE TRIGGER trg_achievement_explorer
+AFTER INSERT ON Visits
+FOR EACH ROW
+BEGIN
+  IF (
+    SELECT COUNT(*) FROM Visits
+    WHERE user_id = NEW.user_id
+  ) = 5 THEN
+    INSERT IGNORE INTO UserAchievements(user_id, achievement_id)
+    VALUES (NEW.user_id, 3);
+  END IF;
+END;
+//
+
+DELIMITER ;
+
+-- @block
+-- visit 100 waypoints
+DELIMITER //
+
+CREATE TRIGGER trg_achievement_globetrotter
+AFTER INSERT ON Visits
+FOR EACH ROW
+BEGIN
+  IF (
+    SELECT COUNT(*) FROM Visits
+    WHERE user_id = NEW.user_id
+  ) = 100 THEN
+    INSERT IGNORE INTO UserAchievements(user_id, achievement_id)
+    VALUES (NEW.user_id, 4);
+  END IF;
+END;
+//
+
+DELIMITER ;
+
+-- @block
+-- finish any route
+DELIMITER //
+
+CREATE TRIGGER trg_achievement_finisher
+AFTER INSERT ON Visits
+FOR EACH ROW
+BEGIN
+  DECLARE route_id INT;
+  DECLARE total_wp INT;
+  DECLARE visited_wp INT;
+
+  -- route for waypoint
+  SELECT route_id INTO route_id FROM Waypoints WHERE id = NEW.waypoint_id;
+
+  -- count for route
+  SELECT COUNT(*) INTO total_wp FROM Waypoints WHERE route_id = route_id;
+
+  -- count of visited points
+  SELECT COUNT(DISTINCT W.id) INTO visited_wp
+  FROM Visits V
+  JOIN Waypoints W ON V.waypoint_id = W.id
+  WHERE V.user_id = NEW.user_id AND W.route_id = route_id;
+
+  -- if all
+  IF visited_wp = total_wp AND total_wp > 0 THEN
+    INSERT IGNORE INTO UserAchievements(user_id, achievement_id)
+    VALUES (NEW.user_id, 5);
+  END IF;
+END;
+//
+
+DELIMITER ;
+
+
 -- @block
 SELECT w.name, w.latitude, w.longitude, visits
 FROM LeaderboardWaypointsWithMostVisits lw
