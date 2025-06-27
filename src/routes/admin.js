@@ -143,7 +143,7 @@ const createRouteThumbnail = async (waypoints, destinationDirectoryFs = './src/p
  * @param {string} thumbnailPath - The path to the thumbnail image.
  */
 const removeThumbnail = async (thumbnailPath) => {
-    if (thumbnailPath === '/assets/route-thumbnails/placeholder-image.jpg') {
+    if (thumbnailPath === '/assets/route-thumbnails/placeholder-image.jpg' || thumbnailPath === null) {
         return;
     }
     const fullPath = `./src/public${thumbnailPath}`;
